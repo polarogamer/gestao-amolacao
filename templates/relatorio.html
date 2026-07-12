@@ -18,56 +18,90 @@
     <div class="col-md-3 col-6"><div class="stat-card stat-card--info"><div class="stat-card__icon"><i class="fas fa-hourglass-half"></i></div><div><div class="stat-card__value">{{ pendentes|length }}</div><div class="stat-card__label">Pendentes</div></div></div></div>
 </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="section-title mt-0">Entradas do Dia</div>
-        <div class="card p-0"><div class="table-responsive"><table class="table table-sm"><thead><tr><th>#</th><th>Cliente</th><th>Código</th><th>Serviço</th></tr></thead><tbody>{% for os in entradas %}<tr><td>{{ loop.index }}</td><td>{{ os.cliente_nome }}</td><td>#{{ os.codigo_seguranca }}</td><td>{{ os.codigo_servico }}</td></tr>{% else %}<tr><td colspan="4" class="text-center">Nenhuma entrada</td></tr>{% endfor %}</tbody></table></div></div>
-    </div>
-    <div class="col-md-6">
-        <div class="section-title mt-0">Saídas do Dia</div>
-        <div class="card p-0"><div class="table-responsive"><table class="table table-sm"><thead><tr><th>Cliente</th><th>Código</th><th>Valor</th><th>Pagamento</th></tr></thead><tbody>{% for os in saidas %}<tr><td>{{ os.cliente_nome }}</td><td>#{{ os.codigo_seguranca }}</td><td>{{ formatar_moeda(os.valor_total) }}</td><td>{{ os.forma_pagamento }}</td></tr>{% else %}<tr><td colspan="4" class="text-center">Nenhuma saída</td></tr>{% endfor %}</tbody></table></div></div>
-    </div>
-</div>
+<ul class="nav nav-tabs" id="relatorioTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-entradas-btn" data-bs-toggle="tab" data-bs-target="#tab-entradas" type="button" role="tab">Entradas do Dia</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-saidas-btn" data-bs-toggle="tab" data-bs-target="#tab-saidas" type="button" role="tab">Saídas do Dia</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-pendentes-btn" data-bs-toggle="tab" data-bs-target="#tab-pendentes" type="button" role="tab">Pendentes</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-vendas-btn" data-bs-toggle="tab" data-bs-target="#tab-vendas" type="button" role="tab">Alicates Vendidos</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-historico-btn" data-bs-toggle="tab" data-bs-target="#tab-historico" type="button" role="tab">Histórico de Fechamentos</button>
+    </li>
+</ul>
 
-<div class="section-title">Pendentes (ainda não vieram buscar)</div>
-<div class="card p-0 mb-4">
-    <div class="table-responsive">
-        <table class="table table-sm mb-0">
-            <thead><tr><th>Cliente</th><th>Telefone</th><th>Código</th><th>Entrada</th><th>Prometida</th></tr></thead>
-            <tbody>
-                {% for os in pendentes %}
-                <tr><td>{{ os.cliente_nome }}</td><td>{{ os.telefone or '-' }}</td><td>#{{ os.codigo_seguranca }}</td><td>{{ formatar_data(os.data_entrada) }}</td><td>{{ formatar_data(os.data_prometida) }}</td></tr>
-                {% else %}<tr><td colspan="5" class="text-center">Nenhum pendente</td></tr>{% endfor %}
-            </tbody>
-        </table>
+<div class="tab-content" id="relatorioTabsContent">
+    <div class="tab-pane fade show active" id="tab-entradas" role="tabpanel">
+        <div class="card p-0">
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>#</th><th>Cliente</th><th>Código</th><th>Serviço</th></tr></thead>
+                    <tbody>{% for os in entradas %}<tr><td>{{ loop.index }}</td><td>{{ os.cliente_nome }}</td><td>#{{ os.codigo_seguranca }}</td><td>{{ os.codigo_servico }}</td></tr>{% else %}<tr><td colspan="4" class="text-center">Nenhuma entrada</td></tr>{% endfor %}</tbody>
+                </table>
+            </div>
+        </div>
     </div>
-</div>
 
-<div class="section-title">Alicates Vendidos Hoje</div>
-<div class="card p-0 mb-4">
-    <div class="table-responsive">
-        <table class="table table-sm mb-0">
-            <thead><tr><th>Cliente</th><th>Telefone</th><th>Produto</th><th>Valor</th><th>Pagamento</th></tr></thead>
-            <tbody>
-                {% for v in vendas_hoje %}
-                <tr><td>{{ v.cliente_nome }}</td><td>{{ v.telefone or '-' }}</td><td>{{ v.produto_descricao }}</td><td>{{ formatar_moeda(v.valor_total) }}</td><td>{{ v.forma_pagamento }}</td></tr>
-                {% else %}<tr><td colspan="5" class="text-center">Nenhuma venda de alicate hoje</td></tr>{% endfor %}
-            </tbody>
-        </table>
+    <div class="tab-pane fade" id="tab-saidas" role="tabpanel">
+        <div class="card p-0">
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Cliente</th><th>Código</th><th>Valor</th><th>Pagamento</th></tr></thead>
+                    <tbody>{% for os in saidas %}<tr><td>{{ os.cliente_nome }}</td><td>#{{ os.codigo_seguranca }}</td><td>{{ formatar_moeda(os.valor_total) }}</td><td>{{ os.forma_pagamento }}</td></tr>{% else %}<tr><td colspan="4" class="text-center">Nenhuma saída</td></tr>{% endfor %}</tbody>
+                </table>
+            </div>
+        </div>
     </div>
-</div>
 
-<div class="section-title">Histórico de Fechamentos</div>
-<div class="card p-0">
-    <div class="table-responsive">
-        <table class="table table-sm mb-0">
-            <thead><tr><th>Data</th><th>Entradas</th><th>Saídas</th><th>Faturamento</th><th>Pendentes na hora</th></tr></thead>
-            <tbody>
-                {% for h in historico %}
-                <tr><td>{{ formatar_data(h.data) }}</td><td>{{ h.total_entradas }}</td><td>{{ h.total_saidas }}</td><td>{{ formatar_moeda(h.faturamento_dia) }}</td><td>{{ h.pendentes }}</td></tr>
-                {% else %}<tr><td colspan="5" class="text-center">Nenhum fechamento registrado ainda</td></tr>{% endfor %}
-            </tbody>
-        </table>
+    <div class="tab-pane fade" id="tab-pendentes" role="tabpanel">
+        <div class="card p-0">
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Cliente</th><th>Telefone</th><th>Código</th><th>Entrada</th><th>Prometida</th></tr></thead>
+                    <tbody>
+                        {% for os in pendentes %}
+                        <tr><td>{{ os.cliente_nome }}</td><td>{{ os.telefone or '-' }}</td><td>#{{ os.codigo_seguranca }}</td><td>{{ formatar_data(os.data_entrada) }}</td><td>{{ formatar_data(os.data_prometida) }}</td></tr>
+                        {% else %}<tr><td colspan="5" class="text-center">Nenhum pendente</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tab-vendas" role="tabpanel">
+        <div class="card p-0">
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Cliente</th><th>Telefone</th><th>Produto</th><th>Valor</th><th>Pagamento</th></tr></thead>
+                    <tbody>
+                        {% for v in vendas_hoje %}
+                        <tr><td>{{ v.cliente_nome }}</td><td>{{ v.telefone or '-' }}</td><td>{{ v.produto_descricao }}</td><td>{{ formatar_moeda(v.valor_total) }}</td><td>{{ v.forma_pagamento }}</td></tr>
+                        {% else %}<tr><td colspan="5" class="text-center">Nenhuma venda de alicate hoje</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tab-historico" role="tabpanel">
+        <div class="card p-0">
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Data</th><th>Entradas</th><th>Saídas</th><th>Faturamento</th><th>Pendentes na hora</th></tr></thead>
+                    <tbody>
+                        {% for h in historico %}
+                        <tr><td>{{ formatar_data(h.data) }}</td><td>{{ h.total_entradas }}</td><td>{{ h.total_saidas }}</td><td>{{ formatar_moeda(h.faturamento_dia) }}</td><td>{{ h.pendentes }}</td></tr>
+                        {% else %}<tr><td colspan="5" class="text-center">Nenhum fechamento registrado ainda</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

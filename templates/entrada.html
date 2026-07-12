@@ -3,7 +3,7 @@
 <div class="page-header">
     <h1><i class="fas fa-inbox"></i>Entrada de Clientes</h1>
 </div>
-<div class="alert {% if qtd_hoje >= meta_diaria %}alert-danger{% elif qtd_hoje >= meta_diaria * 0.8 %}alert-warning{% else %}alert-info{% endif %} d-flex justify-content-between align-items-center flex-wrap gap-2">
+<div class="info-bar {% if qtd_hoje >= meta_diaria %}info-bar--danger{% elif qtd_hoje >= meta_diaria * 0.8 %}info-bar--warning{% endif %}">
     <div><strong>Hoje:</strong> {{ datetime.now().strftime('%d/%m/%Y') }} | <strong>Peças recebidas:</strong> {{ qtd_hoje }}/{{ meta_diaria }}{% if qtd_hoje >= meta_diaria %} — <strong>limite atingido, não é possível cadastrar mais hoje</strong>{% endif %}</div>
     <form method="POST" action="{{ url_for('entrada.entrada_meta') }}" class="d-flex gap-1 align-items-center">
         <label class="small mb-0">Meta do dia:</label>
