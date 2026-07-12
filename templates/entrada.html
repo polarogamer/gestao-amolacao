@@ -1,8 +1,10 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block content %}
-<h2 class="mb-3">📥 ENTRADA - Clientes Novos</h2>
+<div class="page-header">
+    <h1><i class="fas fa-inbox"></i>Entrada de Clientes</h1>
+</div>
 <div class="alert {% if qtd_hoje >= meta_diaria %}alert-danger{% elif qtd_hoje >= meta_diaria * 0.8 %}alert-warning{% else %}alert-info{% endif %} d-flex justify-content-between align-items-center flex-wrap gap-2">
-    <div><strong>📌 Hoje:</strong> {{ datetime.now().strftime('%d/%m/%Y') }} | <strong>Peças recebidas:</strong> {{ qtd_hoje }}/{{ meta_diaria }}{% if qtd_hoje >= meta_diaria %} — <strong>LIMITE ATINGIDO, não é possível cadastrar mais hoje</strong>{% endif %}</div>
+    <div><strong>Hoje:</strong> {{ datetime.now().strftime('%d/%m/%Y') }} | <strong>Peças recebidas:</strong> {{ qtd_hoje }}/{{ meta_diaria }}{% if qtd_hoje >= meta_diaria %} — <strong>limite atingido, não é possível cadastrar mais hoje</strong>{% endif %}</div>
     <form method="POST" action="{{ url_for('entrada.entrada_meta') }}" class="d-flex gap-1 align-items-center">
         <label class="small mb-0">Meta do dia:</label>
         <input type="number" name="meta_diaria" value="{{ meta_diaria }}" class="form-control form-control-sm" style="width:80px">
@@ -12,11 +14,11 @@
 <div class="card p-4">
     <form method="POST">
         <div class="row">
-            <div class="col-md-6"><label class="form-label fw-bold">Nome do Cliente *</label><input name="nome" class="form-control" placeholder="Ex: Maria Santos" required></div>
-            <div class="col-md-6"><label class="form-label fw-bold">Telefone</label><input name="telefone" class="form-control" placeholder="(11) 99999-9999"></div>
+            <div class="col-md-6"><label class="form-label">Nome do Cliente *</label><input name="nome" class="form-control" placeholder="Ex: Maria Santos" required></div>
+            <div class="col-md-6"><label class="form-label">Telefone</label><input name="telefone" class="form-control" placeholder="(11) 99999-9999"></div>
         </div>
         <div class="row mt-3">
-            <div class="col-md-6"><label class="form-label fw-bold">🔘 O que trouxe?</label>
+            <div class="col-md-6"><label class="form-label">O que trouxe?</label>
                 <select name="codigo_servico" id="codigo_servico" class="form-select" onchange="sugerirPreco()">
                     <option value="AT" data-preco="15,00">AT - Alicate</option>
                     <option value="T" data-preco="15,00">T - Tesoura</option>
@@ -26,16 +28,16 @@
                     <option value="M" data-preco="20,00">M - Mola</option>
                 </select>
             </div>
-            <div class="col-md-6"><label class="form-label fw-bold">Tipo de Serviço</label><select name="tipo_servico" class="form-select"><option value="Amolação">Amolação</option><option value="Troca de Mola">Troca de Mola</option><option value="Venda">Venda</option></select></div>
+            <div class="col-md-6"><label class="form-label">Tipo de Serviço</label><select name="tipo_servico" class="form-select"><option value="Amolação">Amolação</option><option value="Troca de Mola">Troca de Mola</option><option value="Venda">Venda</option></select></div>
         </div>
         <div class="row mt-3">
-            <div class="col-md-3"><label class="form-label fw-bold">Quantidade</label><input name="quantidade" type="number" class="form-control" value="1" id="qtd" onchange="calcTotal()" min="1"></div>
-            <div class="col-md-3"><label class="form-label fw-bold">Valor Unitário (R$)</label><input name="valor_unitario" class="form-control" placeholder="0,00" id="vu" onchange="calcTotal()" value="15,00"></div>
-            <div class="col-md-3"><label class="form-label fw-bold">Valor Total (R$)</label><input name="valor_total" class="form-control" id="total" readonly style="background:#e9ecef"></div>
-            <div class="col-md-3"><label class="form-label fw-bold">Data Prometida</label><input name="data_prometida" type="date" class="form-control" value="{{ (datetime.now() + timedelta(days=2)).strftime('%Y-%m-%d') }}"></div>
+            <div class="col-md-3"><label class="form-label">Quantidade</label><input name="quantidade" type="number" class="form-control" value="1" id="qtd" onchange="calcTotal()" min="1"></div>
+            <div class="col-md-3"><label class="form-label">Valor Unitário (R$)</label><input name="valor_unitario" class="form-control" placeholder="0,00" id="vu" onchange="calcTotal()" value="15,00"></div>
+            <div class="col-md-3"><label class="form-label">Valor Total (R$)</label><input name="valor_total" class="form-control" id="total" readonly style="background:#e9ecef"></div>
+            <div class="col-md-3"><label class="form-label">Data Prometida</label><input name="data_prometida" type="date" class="form-control" value="{{ (datetime.now() + timedelta(days=2)).strftime('%Y-%m-%d') }}"></div>
         </div>
-        <div class="mt-3"><label class="form-label fw-bold">Observação</label><textarea name="observacao" class="form-control" rows="2" placeholder="Ex: Cliente trouxe 2 alicates"></textarea></div>
-        <button type="submit" class="btn btn-primary btn-lg mt-3 w-100" {% if qtd_hoje >= meta_diaria %}disabled{% endif %}>✅ SALVAR E GERAR CÓDIGO</button>
+        <div class="mt-3"><label class="form-label">Observação</label><textarea name="observacao" class="form-control" rows="2" placeholder="Ex: Cliente trouxe 2 alicates"></textarea></div>
+        <button type="submit" class="btn btn-primary mt-3 w-100" {% if qtd_hoje >= meta_diaria %}disabled{% endif %}><i class="fas fa-check me-2"></i>Salvar e Gerar Código</button>
     </form>
 </div>
 <script>

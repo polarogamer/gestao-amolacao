@@ -1,11 +1,13 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block content %}
-<h2><i class="fas fa-box me-2" style="color: #0F4C81;"></i>Estoque de Alicates</h2>
+<div class="page-header">
+    <h1><i class="fas fa-box"></i>Estoque de Alicates</h1>
+</div>
 
 <div class="card p-3 mb-4">
-    <h5><i class="fas fa-plus me-2"></i>Adicionar / Reabastecer Produto</h5>
+    <div class="section-title mt-0"><i class="fas fa-plus icon-primary me-2"></i>Adicionar / Reabastecer Produto</div>
     <p class="text-muted small mb-2">Se o SKU já existir, a quantidade é somada ao estoque atual (reabastecimento). Se não existir, cria um produto novo.</p>
-    <form method="POST" action="{{ url_for('estoque.estoque_adicionar') }}" class="row g-2 mt-2">
+    <form method="POST" action="{{ url_for('estoque.estoque_adicionar') }}" class="row g-2">
         <div class="col-md-2"><input name="sku" class="form-control" placeholder="SKU * (ex: ALICATE777)" required></div>
         <div class="col-md-3"><input name="descricao" class="form-control" placeholder="Descrição *" required></div>
         <div class="col-md-2"><input name="tipo" class="form-control" placeholder="Tipo"></div>
@@ -21,7 +23,7 @@
             <thead><tr><th>SKU</th><th>Descrição</th><th>Tipo</th><th>Qtd disponível</th><th>Preço</th><th>Vender / Encomendar</th><th>Ações</th></tr></thead>
             <tbody>
                 {% for p in produtos %}
-                <tr {% if p.quantidade <= p.estoque_minimo %}class="table-warning"{% endif %}>
+                <tr {% if p.quantidade <= p.estoque_minimo %}class="table-low-stock"{% endif %}>
                     <td>{{ p.sku }}</td>
                     <td><strong>{{ p.descricao }}</strong></td>
                     <td>{{ p.tipo or '-' }}</td>
@@ -45,7 +47,7 @@
                             </div>
                         </form>
                     </td>
-                    <td><a href="{{ url_for('estoque.estoque_excluir', id=p.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza?')"><i class="fas fa-trash"></i></a></td>
+                    <td><a href="{{ url_for('estoque.estoque_excluir', id=p.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza?')"><i class="fas fa-trash"></i></a></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -53,7 +55,7 @@
     </div>
 </div>
 
-<h5>📌 Encomendas Pendentes (separadas do estoque, aguardando pagamento na retirada)</h5>
+<div class="section-title">Encomendas Pendentes (separadas do estoque, aguardando pagamento na retirada)</div>
 <div class="card p-0 mb-4">
     <div class="table-responsive">
         <table class="table table-hover mb-0">
@@ -84,7 +86,7 @@
     </div>
 </div>
 
-<h5>✅ Vendas Recentes</h5>
+<div class="section-title">Vendas Recentes</div>
 <div class="card p-0">
     <div class="table-responsive">
         <table class="table table-sm mb-0">

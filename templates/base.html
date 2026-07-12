@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -6,55 +6,40 @@
     <title>Gestão Amolação</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root { --primary: #0F4C81; --secondary: #1A6D8F; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .sidebar { background: linear-gradient(135deg, var(--primary), var(--secondary)); min-height: 100vh; }
-        .sidebar .nav-link { color: rgba(255,255,255,0.9); padding: 12px 20px; border-radius: 12px; margin: 5px 10px; transition: all 0.3s; }
-        .sidebar .nav-link:hover { background: rgba(255,255,255,0.2); }
-        .sidebar .nav-link i { width: 25px; margin-right: 10px; }
-        .card { border-radius: 20px; border: none; box-shadow: 0 5px 20px rgba(0,0,0,0.05); transition: all 0.3s; }
-        .card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; border-radius: 10px; padding: 10px 20px; font-weight: 600; transition: all 0.3s; }
-        .btn-primary:hover { transform: scale(1.02); box-shadow: 0 5px 15px rgba(15,76,129,0.3); }
-        .badge-status { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-        .badge-pendente { background: #FF8C00; color: white; }
-        .badge-pronto { background: #00A86B; color: white; }
-        .badge-pago { background: #6c757d; color: white; }
-        .table thead th { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; font-weight: 600; padding: 12px; border: none; white-space: nowrap; }
-        @media (max-width: 768px) { .sidebar { position: fixed; bottom: 0; width: 100%; min-height: auto; z-index: 1000; border-radius: 20px 20px 0 0; } .sidebar .nav { flex-direction: row !important; justify-content: space-around; padding: 10px 5px; } .sidebar .nav-link { text-align: center; padding: 8px 5px; margin: 0; font-size: 0.7rem; } .sidebar .nav-link i { display: block; margin: 0 auto 5px auto; font-size: 1rem; } .sidebar .text-center { display: none; } .main-content { margin-bottom: 70px; padding: 15px !important; } }
-        .logo-text { font-size: 1.5rem; font-weight: 800; color: white; }
-        @media (max-width: 768px) { .logo-text { display: none; } }
-        .animate-fade-in { animation: fadeIn 0.5s ease forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .user-info { color: rgba(255,255,255,0.8); padding: 10px 20px; }
-        .user-info i { margin-right: 8px; }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 </head>
 <body>
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-2 col-12 sidebar p-0">
-                <div class="text-center py-3">
-                    <i class="fas fa-tools fa-2x text-white"></i>
-                    <h4 class="text-white mt-1 logo-text">Gestão Amolação</h4>
+                <div class="brand text-center">
+                    <i class="fas fa-tools"></i>
+                    <div class="logo-text mt-1">Gestão Amolação</div>
                 </div>
                 <div class="user-info">
-                    <i class="fas fa-user-circle"></i> {{ session.nome if session.nome else 'Admin' }}
-                    <a href="{{ url_for('auth.logout') }}" class="text-white float-end" title="Sair"><i class="fas fa-sign-out-alt"></i></a>
+                    <i class="fas fa-user-circle"></i>{{ session.nome if session.nome else 'Admin' }}
+                    <a href="{{ url_for('auth.logout') }}" class="float-end" title="Sair"><i class="fas fa-sign-out-alt"></i></a>
                 </div>
-                <hr class="mx-3" style="border-color: rgba(255,255,255,0.2);">
+                <hr>
                 <nav class="nav flex-column">
-                    <a class="nav-link {% if request.endpoint == 'dashboard.dashboard' %}active{% endif %}" href="{{ url_for('dashboard.dashboard') }}"><i class="fas fa-chart-line"></i> Dashboard</a>
-                    <a class="nav-link {% if request.endpoint == 'entrada.entrada' %}active{% endif %}" href="{{ url_for('entrada.entrada') }}"><i class="fas fa-inbox"></i> Entrada</a>
-                    <a class="nav-link {% if request.endpoint == 'saida.saida' %}active{% endif %}" href="{{ url_for('saida.saida') }}"><i class="fas fa-outdent"></i> Saída</a>
-                    <a class="nav-link {% if request.endpoint == 'relatorio.relatorio' %}active{% endif %}" href="{{ url_for('relatorio.relatorio') }}"><i class="fas fa-file-alt"></i> Relatório</a>
-                    <a class="nav-link {% if request.endpoint == 'clientes.clientes' %}active{% endif %}" href="{{ url_for('clientes.clientes') }}"><i class="fas fa-users"></i> Clientes</a>
-                    <a class="nav-link {% if request.endpoint == 'caixa.caixa' %}active{% endif %}" href="{{ url_for('caixa.caixa') }}"><i class="fas fa-coins"></i> Caixa</a>
-                    <a class="nav-link {% if request.endpoint == 'mensagens.mensagens' %}active{% endif %}" href="{{ url_for('mensagens.mensagens') }}"><i class="fab fa-whatsapp"></i> Mensagens</a>
-                    <a class="nav-link {% if request.endpoint == 'estoque.estoque' %}active{% endif %}" href="{{ url_for('estoque.estoque') }}"><i class="fas fa-box"></i> Estoque</a>
-                    <a class="nav-link {% if request.endpoint == 'consumiveis.consumiveis' %}active{% endif %}" href="{{ url_for('consumiveis.consumiveis') }}"><i class="fas fa-microchip"></i> Consumíveis</a>
+                    <div class="nav-section-title">Principal</div>
+                    <a class="nav-link {% if request.endpoint == 'dashboard.dashboard' %}active{% endif %}" href="{{ url_for('dashboard.dashboard') }}"><i class="fas fa-gauge-high"></i>Dashboard</a>
+
+                    <div class="nav-section-title">Atendimento</div>
+                    <a class="nav-link {% if request.endpoint == 'entrada.entrada' %}active{% endif %}" href="{{ url_for('entrada.entrada') }}"><i class="fas fa-inbox"></i>Entrada</a>
+                    <a class="nav-link {% if request.endpoint == 'saida.saida' %}active{% endif %}" href="{{ url_for('saida.saida') }}"><i class="fas fa-outdent"></i>Saída</a>
+                    <a class="nav-link {% if request.endpoint == 'relatorio.relatorio' %}active{% endif %}" href="{{ url_for('relatorio.relatorio') }}"><i class="fas fa-file-alt"></i>Relatório</a>
+                    <a class="nav-link {% if request.endpoint == 'clientes.clientes' %}active{% endif %}" href="{{ url_for('clientes.clientes') }}"><i class="fas fa-users"></i>Clientes</a>
+
+                    <div class="nav-section-title">Financeiro</div>
+                    <a class="nav-link {% if request.endpoint == 'caixa.caixa' %}active{% endif %}" href="{{ url_for('caixa.caixa') }}"><i class="fas fa-coins"></i>Caixa</a>
+
+                    <div class="nav-section-title">Estoque</div>
+                    <a class="nav-link {% if request.endpoint == 'estoque.estoque' %}active{% endif %}" href="{{ url_for('estoque.estoque') }}"><i class="fas fa-box"></i>Estoque</a>
+                    <a class="nav-link {% if request.endpoint == 'consumiveis.consumiveis' %}active{% endif %}" href="{{ url_for('consumiveis.consumiveis') }}"><i class="fas fa-microchip"></i>Consumíveis</a>
+
+                    <div class="nav-section-title">Comunicação</div>
+                    <a class="nav-link {% if request.endpoint == 'mensagens.mensagens' %}active{% endif %}" href="{{ url_for('mensagens.mensagens') }}"><i class="fab fa-whatsapp"></i>Mensagens</a>
                 </nav>
             </div>
             <div class="col-md-10 col-12 main-content p-4">
