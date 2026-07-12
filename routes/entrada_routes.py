@@ -49,6 +49,9 @@ def entrada():
         data_prometida = request.form.get('data_prometida')
         observacao = request.form.get('observacao')
 
+        pagou_agora = request.form.get('pagamento_status') == 'agora'
+        forma_pagamento = request.form.get('forma_pagamento') if pagou_agora else None
+
         if not nome:
             flash('Nome do cliente é obrigatório!', 'error')
             conn.close()
@@ -56,6 +59,11 @@ def entrada():
 
         if quantidade < 1:
             flash('Quantidade inválida!', 'error')
+            conn.close()
+            return redirect(url_for('entrada.entrada'))
+
+        if pagou_agora and not forma_pagamento:
+            flash('Selecione a forma de pagamento!', 'error')
             conn.close()
             return redirect(url_for('entrada.entrada'))
 
@@ -80,17 +88,27 @@ def entrada():
         else:
             cliente_id = cliente['id']
 
+        hoje = datetime.now().strftime('%Y-%m-%d')
         cur.execute('''
             INSERT INTO ordens_servico (
                 cliente_id, numero_os, codigo_seguranca, codigo_servico, tipo_servico,
                 quantidade, valor_unitario, valor_total, data_entrada, data_prometida,
-                status, observacao
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                status, observacao, forma_pagamento
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
         ''', (
             cliente_id, numero_os, codigo_seguranca, codigo_servico, tipo_servico,
-            quantidade, valor_unitario, valor_total, datetime.now().strftime('%Y-%m-%d'),
-            data_prometida, 'Entrada', observacao
+            quantidade, valor_unitario, valor_total, hoje,
+            data_prometida, 'Entrada', observacao, forma_pagamento
         ))
+        os_id = cur.fetchone()['id']
+
+        if pagou_agora:
+            cur.execute('''
+                INSERT INTO movimentacoes_caixa (data, tipo, descricao, categoria, valor, forma_pagamento, referencia_os_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            ''', (hoje, 'entrada', f'Pagamento antecipado OS {numero_os} - {nome}',
+                  'Serviço', valor_total, forma_pagamento, os_id))
+
         conn.commit()
         cur.close()
         conn.close()

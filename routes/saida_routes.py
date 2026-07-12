@@ -9,17 +9,27 @@ bp = Blueprint('saida', __name__)
 
 
 def _finalizar_entrega(conn, os_row, forma_pagamento):
+    """Marca a OS como entregue/paga. Se o cliente já pagou na entrada
+    (os_row['forma_pagamento'] já preenchido), o lançamento no caixa já foi
+    feito lá - aqui só confirma a retirada, sem duplicar o valor no caixa."""
     cur = conn.cursor()
     hoje = datetime.now().strftime('%Y-%m-%d')
-    cur.execute(
-        "UPDATE ordens_servico SET status = 'Pago', data_entrega = %s, forma_pagamento = %s WHERE id = %s",
-        (hoje, forma_pagamento, os_row['id']),
-    )
-    cur.execute('''
-        INSERT INTO movimentacoes_caixa (data, tipo, descricao, categoria, valor, forma_pagamento, referencia_os_id)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
-    ''', (hoje, 'entrada', f'Pagamento OS {os_row["numero_os"]} - {os_row["cliente_nome"]}',
-          'Serviço', os_row['valor_total'], forma_pagamento, os_row['id']))
+
+    if os_row['forma_pagamento']:
+        cur.execute(
+            "UPDATE ordens_servico SET status = 'Pago', data_entrega = %s WHERE id = %s",
+            (hoje, os_row['id']),
+        )
+    else:
+        cur.execute(
+            "UPDATE ordens_servico SET status = 'Pago', data_entrega = %s, forma_pagamento = %s WHERE id = %s",
+            (hoje, forma_pagamento, os_row['id']),
+        )
+        cur.execute('''
+            INSERT INTO movimentacoes_caixa (data, tipo, descricao, categoria, valor, forma_pagamento, referencia_os_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        ''', (hoje, 'entrada', f'Pagamento OS {os_row["numero_os"]} - {os_row["cliente_nome"]}',
+              'Serviço', os_row['valor_total'], forma_pagamento, os_row['id']))
     conn.commit()
     cur.close()
 
@@ -50,6 +60,11 @@ def saida():
 
         if not os_row:
             flash('Código não encontrado ou alicate já retirado!', 'error')
+            conn.close()
+            return redirect(url_for('saida.saida'))
+
+        if not os_row['forma_pagamento'] and not forma_pagamento:
+            flash('Selecione a forma de pagamento!', 'error')
             conn.close()
             return redirect(url_for('saida.saida'))
 
@@ -89,9 +104,6 @@ def saida():
 @login_required
 def saida_entregar(id):
     forma_pagamento = request.form.get('forma_pagamento')
-    if not forma_pagamento:
-        flash('Selecione a forma de pagamento!', 'error')
-        return redirect(url_for('saida.saida'))
 
     conn = get_db()
     cur = conn.cursor()
@@ -106,6 +118,11 @@ def saida_entregar(id):
 
     if not os_row:
         flash('Ordem não encontrada ou já retirada!', 'error')
+        conn.close()
+        return redirect(url_for('saida.saida'))
+
+    if not os_row['forma_pagamento'] and not forma_pagamento:
+        flash('Selecione a forma de pagamento!', 'error')
         conn.close()
         return redirect(url_for('saida.saida'))
 
