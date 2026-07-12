@@ -1,0 +1,50 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-3">📤 SAÍDA - Clientes Buscando</h2>
+<div class="card p-4 mb-4">
+    <h5>🔑 Buscar por Código</h5>
+    <form method="POST" class="row g-2">
+        <div class="col-md-6"><input name="codigo" class="form-control" placeholder="Digite o código (ex: 837492)" required></div>
+        <div class="col-md-3"><select name="forma_pagamento" class="form-select" required><option value="">Pagamento</option><option value="Dinheiro">💰 Dinheiro</option><option value="Pix">📱 Pix</option><option value="Espécie">💳 Espécie</option></select></div>
+        <div class="col-md-3"><button type="submit" class="btn btn-success w-100">🔍 BUSCAR E ENTREGAR</button></div>
+    </form>
+</div>
+<div class="card p-3 mb-3">
+    <h5>🙋 Não sabe o código? Busque pelo nome ou telefone</h5>
+    <form method="GET" class="row g-2">
+        <div class="col-md-9"><input name="busca" value="{{ busca }}" class="form-control" placeholder="Digite o nome ou telefone do cliente"></div>
+        <div class="col-md-3"><button type="submit" class="btn btn-outline-primary w-100"><i class="fas fa-search"></i> Buscar</button></div>
+    </form>
+</div>
+<h5>📋 ORDENS PRONTAS PARA ENTREGA {% if busca %}<small class="text-muted">(filtro: "{{ busca }}")</small>{% endif %}</h5>
+<div class="card p-0">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>🔑 Código</th><th>Cliente</th><th>Telefone</th><th>Serviço</th><th>Valor</th><th>Status</th><th>Entregar sem código</th></tr></thead>
+            <tbody>
+                {% for os in prontos %}
+                <tr>
+                    <td><strong>#{{ os.codigo_seguranca }}</strong></td>
+                    <td>{{ os.cliente_nome }}</td>
+                    <td>{{ os.telefone or '-' }}</td>
+                    <td>{{ os.codigo_servico }} x{{ os.quantidade }}</td>
+                    <td>{{ formatar_moeda(os.valor_total) }}</td>
+                    <td><span class="badge {% if os.status == 'Pronto' %}bg-success{% else %}bg-warning{% endif %}">{{ os.status }}</span></td>
+                    <td>
+                        <form method="POST" action="{{ url_for('saida.saida_entregar', id=os.id) }}" class="d-flex gap-1">
+                            <select name="forma_pagamento" class="form-select form-select-sm" required style="width:110px">
+                                <option value="">Pagto</option>
+                                <option value="Dinheiro">Dinheiro</option>
+                                <option value="Pix">Pix</option>
+                                <option value="Espécie">Espécie</option>
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Confirmar entrega para {{ os.cliente_nome }}?')">Entregar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}<tr><td colspan="7" class="text-center">Nenhum alicate pronto para entrega</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

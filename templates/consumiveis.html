@@ -1,0 +1,26 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h2><i class="fas fa-microchip me-2" style="color: #0F4C81;"></i>Consumíveis</h2>
+<div class="card p-3 mb-4">
+    <h5><i class="fas fa-plus me-2"></i>Adicionar Insumo</h5>
+    <form method="POST" action="{{ url_for('consumiveis.consumivel_adicionar') }}" class="row g-2 mt-2">
+        <div class="col-md-3"><input name="nome" class="form-control" placeholder="Nome *" required></div>
+        <div class="col-md-2"><input name="quantidade" class="form-control" placeholder="Qtd" value="0"></div>
+        <div class="col-md-2"><input name="unidade" class="form-control" placeholder="Unidade" value="un"></div>
+        <div class="col-md-2"><input name="estoque_minimo" class="form-control" placeholder="Mínimo" value="5"></div>
+        <div class="col-md-2"><input name="preco_unitario" class="form-control" placeholder="Preço" value="0,00"></div>
+        <div class="col-md-1"><button class="btn btn-primary w-100"><i class="fas fa-plus"></i></button></div>
+    </form>
+</div>
+<div class="card p-0">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>Insumo</th><th>Qtd</th><th>Unidade</th><th>Mínimo</th><th>Preço</th><th>Uso</th><th>Ações</th></tr></thead>
+            <tbody>{% for item in consumiveis %}<tr {% if item.quantidade <= item.estoque_minimo %}class="table-warning"{% endif %}><td><strong>{{ item.nome }}</strong></td><td>{{ item.quantidade }}</td><td>{{ item.unidade }}</td><td>{{ item.estoque_minimo }}</td><td>{{ formatar_moeda(item.preco_unitario) }}</td><td><form method="POST" action="{{ url_for('consumiveis.consumivel_usar', id=item.id) }}" class="d-flex gap-1"><input name="quantidade" type="number" class="form-control form-control-sm" style="width:70px" placeholder="Qtd" min="1" max="{{ item.quantidade }}" required><button class="btn btn-sm btn-warning"><i class="fas fa-arrow-down"></i> Usar</button></form></td><td>
+                <a href="{{ url_for('consumiveis.consumivel_editar', id=item.id) }}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
+                <a href="{{ url_for('consumiveis.consumivel_excluir', id=item.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza?')"><i class="fas fa-trash"></i></a>
+            </td></tr>{% endfor %}</tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

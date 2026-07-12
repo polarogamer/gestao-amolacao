@@ -1,0 +1,73 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <h2 class="mb-0">📊 RELATÓRIO DO DIA - {{ datetime.now().strftime('%d/%m/%Y') }}</h2>
+    {% if ja_fechado_hoje %}
+        <span class="badge bg-secondary p-2">✅ Dia já fechado às {{ ja_fechado_hoje.fechado_em }}</span>
+    {% else %}
+        <form method="POST" action="{{ url_for('relatorio.relatorio_fechar') }}" onsubmit="return confirm('Fechar o dia agora? Isso vai remover do banco os clientes/pedidos já pagos e retirados. Os pendentes continuam.')">
+            <button class="btn btn-danger"><i class="fas fa-lock me-2"></i>Fechar o Dia</button>
+        </form>
+    {% endif %}
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card p-3 text-center bg-primary text-white"><h3>{{ entradas|length }}</h3><small>📥 Entradas</small></div></div>
+    <div class="col-md-3"><div class="card p-3 text-center bg-success text-white"><h3>{{ saidas|length }}</h3><small>📤 Saídas</small></div></div>
+    <div class="col-md-3"><div class="card p-3 text-center bg-warning text-white"><h3>{{ formatar_moeda(total_faturado) }}</h3><small>💰 Faturamento (serviços + vendas)</small></div></div>
+    <div class="col-md-3"><div class="card p-3 text-center bg-info text-white"><h3>{{ pendentes|length }}</h3><small>⏳ Pendentes (não retiraram ainda)</small></div></div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <h5>📥 Entradas do Dia</h5>
+        <div class="card p-0"><div class="table-responsive"><table class="table table-sm"><thead><tr><th>#</th><th>Cliente</th><th>Código</th><th>Serviço</th></tr></thead><tbody>{% for os in entradas %}<tr><td>{{ loop.index }}</td><td>{{ os.cliente_nome }}</td><td>#{{ os.codigo_seguranca }}</td><td>{{ os.codigo_servico }}</td></tr>{% else %}<tr><td colspan="4" class="text-center">Nenhuma entrada</td></tr>{% endfor %}</tbody></table></div></div>
+    </div>
+    <div class="col-md-6">
+        <h5>📤 Saídas do Dia</h5>
+        <div class="card p-0"><div class="table-responsive"><table class="table table-sm"><thead><tr><th>Cliente</th><th>Código</th><th>Valor</th><th>Pagamento</th></tr></thead><tbody>{% for os in saidas %}<tr><td>{{ os.cliente_nome }}</td><td>#{{ os.codigo_seguranca }}</td><td>{{ formatar_moeda(os.valor_total) }}</td><td>{{ os.forma_pagamento }}</td></tr>{% else %}<tr><td colspan="4" class="text-center">Nenhuma saída</td></tr>{% endfor %}</tbody></table></div></div>
+    </div>
+</div>
+
+<h5 class="mt-4">⏳ Pendentes (ainda não vieram buscar)</h5>
+<div class="card p-0 mb-4">
+    <div class="table-responsive">
+        <table class="table table-sm mb-0">
+            <thead><tr><th>Cliente</th><th>Telefone</th><th>Código</th><th>Entrada</th><th>Prometida</th></tr></thead>
+            <tbody>
+                {% for os in pendentes %}
+                <tr><td>{{ os.cliente_nome }}</td><td>{{ os.telefone or '-' }}</td><td>#{{ os.codigo_seguranca }}</td><td>{{ formatar_data(os.data_entrada) }}</td><td>{{ formatar_data(os.data_prometida) }}</td></tr>
+                {% else %}<tr><td colspan="5" class="text-center">Nenhum pendente 🎉</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h5>🖇️ Alicates Vendidos Hoje</h5>
+<div class="card p-0 mb-4">
+    <div class="table-responsive">
+        <table class="table table-sm mb-0">
+            <thead><tr><th>Cliente</th><th>Telefone</th><th>Produto</th><th>Valor</th><th>Pagamento</th></tr></thead>
+            <tbody>
+                {% for v in vendas_hoje %}
+                <tr><td>{{ v.cliente_nome }}</td><td>{{ v.telefone or '-' }}</td><td>{{ v.produto_descricao }}</td><td>{{ formatar_moeda(v.valor_total) }}</td><td>{{ v.forma_pagamento }}</td></tr>
+                {% else %}<tr><td colspan="5" class="text-center">Nenhuma venda de alicate hoje</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h5>🗓️ Histórico de Fechamentos</h5>
+<div class="card p-0">
+    <div class="table-responsive">
+        <table class="table table-sm mb-0">
+            <thead><tr><th>Data</th><th>Entradas</th><th>Saídas</th><th>Faturamento</th><th>Pendentes na hora</th></tr></thead>
+            <tbody>
+                {% for h in historico %}
+                <tr><td>{{ formatar_data(h.data) }}</td><td>{{ h.total_entradas }}</td><td>{{ h.total_saidas }}</td><td>{{ formatar_moeda(h.faturamento_dia) }}</td><td>{{ h.pendentes }}</td></tr>
+                {% else %}<tr><td colspan="5" class="text-center">Nenhum fechamento registrado ainda</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

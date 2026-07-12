@@ -1,0 +1,19 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-3">👥 CLIENTES</h2>
+<div class="alert alert-info small">Clientes que já retiraram e pagaram tudo são removidos automaticamente do banco quando o dia é fechado (aba Relatório), para não acumular.</div>
+<div class="card p-0">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>Nome</th><th>Telefone</th><th>Código</th><th>Cadastro</th><th>Situação</th></tr></thead>
+            <tbody>
+                {% for c in clientes %}
+                <tr><td><strong>{{ c.nome }}</strong></td><td>{{ c.telefone or '-' }}</td><td><span class="badge bg-secondary">#{{ c.codigo_seguranca }}</span></td><td>{{ formatar_data(c.data_cadastro) }}</td>
+                <td>{% if c.pendentes > 0 %}<span class="badge bg-warning">{{ c.pendentes }} pendente(s)</span>{% else %}<span class="badge bg-success">Em dia</span>{% endif %}</td></tr>
+                {% else %}<tr><td colspan="5" class="text-center">Nenhum cliente cadastrado</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

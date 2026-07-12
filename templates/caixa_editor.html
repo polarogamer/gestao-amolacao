@@ -1,0 +1,13 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h2><i class="fas fa-edit me-2"></i>Editar Movimentação</h2>
+<form method="POST" class="card p-4">
+    <select name="tipo" class="form-select mb-2"><option value="entrada" {% if mov.tipo == 'entrada' %}selected{% endif %}>Entrada</option><option value="saida" {% if mov.tipo == 'saida' %}selected{% endif %}>Saída</option></select>
+    <input name="descricao" class="form-control mb-2" value="{{ mov.descricao }}" required>
+    <input name="valor" class="form-control mb-2" value="{{ mov.valor|replace('.', ',') if mov.valor else '0,00' }}" required>
+    <select name="categoria" class="form-select mb-2"><option value="Serviço" {% if mov.categoria == 'Serviço' %}selected{% endif %}>Serviço</option><option value="Venda" {% if mov.categoria == 'Venda' %}selected{% endif %}>Venda</option><option value="Despesa" {% if mov.categoria == 'Despesa' %}selected{% endif %}>Despesa</option><option value="Outros" {% if mov.categoria == 'Outros' %}selected{% endif %}>Outros</option></select>
+    <select name="forma_pagamento" class="form-select mb-2"><option value="Dinheiro" {% if mov.forma_pagamento == 'Dinheiro' %}selected{% endif %}>Dinheiro</option><option value="Pix" {% if mov.forma_pagamento == 'Pix' %}selected{% endif %}>Pix</option><option value="Cartão" {% if mov.forma_pagamento == 'Cartão' %}selected{% endif %}>Cartão</option></select>
+    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Salvar</button>
+    <a href="{{ url_for('caixa.caixa') }}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

@@ -1,0 +1,34 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-3">📱 MENSAGENS - Clientes Prontos</h2>
+<div class="alert alert-info small">Envio manual pelo WhatsApp Web por enquanto (clique em "Enviar" abre a conversa já com o código pronto). Integração automática com o WhatsApp da loja fica para uma próxima etapa.</div>
+<div class="card p-0">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>Cliente</th><th>Telefone</th><th>Código</th><th>Serviço</th><th>Valor</th><th>Ações</th></tr></thead>
+            <tbody>
+                {% for os in prontos %}
+                <tr>
+                    <td><strong>{{ os.cliente_nome }}</strong></td>
+                    <td>{{ os.telefone or '-' }}</td>
+                    <td><span class="badge bg-success">#{{ os.codigo_seguranca }}</span></td>
+                    <td>{{ os.codigo_servico }} x{{ os.quantidade }}</td>
+                    <td>{{ formatar_moeda(os.valor_total) }}</td>
+                    <td>
+                        {% if os.telefone %}
+                        <a href="https://wa.me/55{{ os.telefone|replace('(', '')|replace(')', '')|replace(' ', '')|replace('-', '') }}?text=Ol%C3%A1%20{{ os.cliente_nome }}!%20Seu%20alicate%20j%C3%A1%20est%C3%A1%20PRONTO!%20C%C3%B3digo:%20{{ os.codigo_seguranca }}%20Valor:%20{{ formatar_moeda(os.valor_total) }}" target="_blank" class="btn btn-sm btn-success">
+                            <i class="fab fa-whatsapp"></i> Enviar
+                        </a>
+                        {% else %}
+                        <span class="text-muted">Sem telefone</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center">Nenhum cliente com alicate pronto para retirar</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

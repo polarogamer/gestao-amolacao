@@ -1,0 +1,45 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h2 class="text-center mb-3" style="color: #0F4C81;">🏪 Gestão Amolação</h2>
+<p class="text-center text-muted">{{ datetime.now().strftime('%d/%m/%Y') }} | Peças recebidas hoje: {{ qtd_hoje }}/{{ meta_diaria }}</p>
+<div class="row g-3">
+    <div class="col-md-4 col-12">
+        <a href="{{ url_for('entrada.entrada') }}" class="text-decoration-none">
+            <div class="card p-3 text-center text-white shadow" style="background: linear-gradient(135deg, #0F4C81, #1A6D8F); min-height: 130px;">
+                <i class="fas fa-inbox fa-2x mb-1"></i>
+                <h5 class="mb-0">📥 ENTRADA</h5>
+                <small>Novos alicates</small>
+                <h2 class="mb-0">{{ entradas_hoje }}</h2>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 col-12">
+        <a href="{{ url_for('saida.saida') }}" class="text-decoration-none">
+            <div class="card p-3 text-center text-white shadow" style="background: linear-gradient(135deg, #00A86B, #008f5a); min-height: 130px;">
+                <i class="fas fa-outdent fa-2x mb-1"></i>
+                <h5 class="mb-0">📤 SAÍDA</h5>
+                <small>Buscar alicates</small>
+                <h2 class="mb-0">{{ saidas_hoje }}</h2>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 col-12">
+        <a href="{{ url_for('relatorio.relatorio') }}" class="text-decoration-none">
+            <div class="card p-3 text-center text-white shadow" style="background: linear-gradient(135deg, #FF8C00, #e67e00); min-height: 130px;">
+                <i class="fas fa-hourglass-half fa-2x mb-1"></i>
+                <h5 class="mb-0">⏳ PENDENTES</h5>
+                <small>Não retiraram ainda</small>
+                <h2 class="mb-0">{{ pendentes }}</h2>
+            </div>
+        </a>
+    </div>
+</div>
+<div class="row g-3 mt-1">
+    <div class="col-4 col-md-2"><a href="{{ url_for('relatorio.relatorio') }}" class="text-decoration-none"><div class="card p-2 text-center text-white shadow-sm" style="background: #17a2b8;"><i class="fas fa-file-alt fa-1x"></i><small>RELATÓRIO</small></div></a></div>
+    <div class="col-4 col-md-2"><a href="{{ url_for('clientes.clientes') }}" class="text-decoration-none"><div class="card p-2 text-center text-white shadow-sm" style="background: #6c757d;"><i class="fas fa-users fa-1x"></i><small>CLIENTES</small></div></a></div>
+    <div class="col-4 col-md-2"><a href="{{ url_for('caixa.caixa') }}" class="text-decoration-none"><div class="card p-2 text-center text-white shadow-sm" style="background: #343a40;"><i class="fas fa-coins fa-1x"></i><small>CAIXA</small><small style="font-size: 0.6rem;">{{ faturamento }}</small></div></a></div>
+    <div class="col-4 col-md-2"><a href="{{ url_for('mensagens.mensagens') }}" class="text-decoration-none"><div class="card p-2 text-center text-white shadow-sm" style="background: #dc3545;"><i class="fab fa-whatsapp fa-1x"></i><small>MENSAGENS</small></div></a></div>
+    <div class="col-4 col-md-2"><a href="{{ url_for('estoque.estoque') }}" class="text-decoration-none"><div class="card p-2 text-center text-dark shadow-sm" style="background: #f8f9fa;"><i class="fas fa-box fa-1x"></i><small>ESTOQUE</small></div></a></div>
+    <div class="col-4 col-md-2"><a href="{{ url_for('consumiveis.consumiveis') }}" class="text-decoration-none"><div class="card p-2 text-center text-dark shadow-sm" style="background: #f8f9fa;"><i class="fas fa-microchip fa-1x"></i><small>CONSUMÍVEIS</small></div></a></div>
+</div>
+{% endblock %}
