@@ -34,8 +34,8 @@
                     <td><span class="badge-soft {% if os.status == 'Pronto' %}badge-soft-success{% else %}badge-soft-warning{% endif %}">{{ os.status }}</span></td>
                     <td>
                         <form method="POST" action="{{ url_for('saida.saida_entregar', id=os.id) }}" class="d-flex gap-1">
-                            <select name="forma_pagamento" class="form-select form-select-sm" required style="width:110px">
-                                <option value="">Pagto</option>
+                            <select name="forma_pagamento" class="form-select form-select-sm" required style="width:130px">
+                                <option value="">Pagamento</option>
                                 <option value="Dinheiro">Dinheiro</option>
                                 <option value="Pix">Pix</option>
                                 <option value="Espécie">Espécie</option>
