@@ -1,11 +1,13 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block content %}
-<h2><i class="fas fa-box me-2" style="color: #0F4C81;"></i>Estoque de Alicates</h2>
+<div class="page-header">
+    <h1><i class="fas fa-box"></i>Estoque de Alicates</h1>
+</div>
 
 <div class="card p-3 mb-4">
-    <h5><i class="fas fa-plus me-2"></i>Adicionar / Reabastecer Produto</h5>
+    <div class="section-title mt-0"><i class="fas fa-plus icon-primary me-2"></i>Adicionar / Reabastecer Produto</div>
     <p class="text-muted small mb-2">Se o SKU já existir, a quantidade é somada ao estoque atual (reabastecimento). Se não existir, cria um produto novo.</p>
-    <form method="POST" action="{{ url_for('estoque.estoque_adicionar') }}" class="row g-2 mt-2">
+    <form method="POST" action="{{ url_for('estoque.estoque_adicionar') }}" class="row g-2">
         <div class="col-md-2"><input name="sku" class="form-control" placeholder="SKU * (ex: ALICATE777)" required></div>
         <div class="col-md-3"><input name="descricao" class="form-control" placeholder="Descrição *" required></div>
         <div class="col-md-2"><input name="tipo" class="form-control" placeholder="Tipo"></div>
@@ -15,86 +17,105 @@
     </form>
 </div>
 
-<div class="card p-0 mb-4">
-    <div class="table-responsive">
-        <table class="table table-hover mb-0">
-            <thead><tr><th>SKU</th><th>Descrição</th><th>Tipo</th><th>Qtd disponível</th><th>Preço</th><th>Vender / Encomendar</th><th>Ações</th></tr></thead>
-            <tbody>
-                {% for p in produtos %}
-                <tr {% if p.quantidade <= p.estoque_minimo %}class="table-warning"{% endif %}>
-                    <td>{{ p.sku }}</td>
-                    <td><strong>{{ p.descricao }}</strong></td>
-                    <td>{{ p.tipo or '-' }}</td>
-                    <td><strong>{{ p.quantidade }}</strong></td>
-                    <td>{{ formatar_moeda(p.preco_venda) }}</td>
-                    <td>
-                        <form method="POST" action="{{ url_for('estoque.estoque_vender') }}" class="row g-1">
-                            <input type="hidden" name="produto_id" value="{{ p.id }}">
-                            <div class="col-md-3"><input name="cliente_nome" class="form-control form-control-sm" placeholder="Nome do cliente" required></div>
-                            <div class="col-md-2"><input name="telefone" class="form-control form-control-sm" placeholder="Telefone"></div>
-                            <div class="col-md-1"><input name="quantidade" type="number" class="form-control form-control-sm" value="1" min="1" max="{{ p.quantidade }}"></div>
-                            <div class="col-md-2">
-                                <select name="forma_pagamento" class="form-select form-select-sm">
-                                    <option value="">Encomenda (paga depois)</option>
-                                    <option value="Pix">Pix (paga agora)</option>
-                                    <option value="Espécie">Espécie (paga agora)</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <button class="btn btn-sm btn-success w-100" {% if p.quantidade <= 0 %}disabled{% endif %}>Registrar</button>
-                            </div>
-                        </form>
-                    </td>
-                    <td><a href="{{ url_for('estoque.estoque_excluir', id=p.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza?')"><i class="fas fa-trash"></i></a></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
+<ul class="nav nav-tabs" id="estoqueTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-produtos-btn" data-bs-toggle="tab" data-bs-target="#tab-produtos" type="button" role="tab">Produtos</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-encomendas-btn" data-bs-toggle="tab" data-bs-target="#tab-encomendas" type="button" role="tab">Encomendas Pendentes {% if reservas %}<span class="badge-soft badge-soft-warning ms-1">{{ reservas|length }}</span>{% endif %}</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-vendas-btn" data-bs-toggle="tab" data-bs-target="#tab-vendas" type="button" role="tab">Vendas Recentes</button>
+    </li>
+</ul>
 
-<h5>📌 Encomendas Pendentes (separadas do estoque, aguardando pagamento na retirada)</h5>
-<div class="card p-0 mb-4">
-    <div class="table-responsive">
-        <table class="table table-hover mb-0">
-            <thead><tr><th>Cliente</th><th>Telefone</th><th>Produto</th><th>Qtd</th><th>Valor</th><th>Registrado em</th><th>Confirmar Pagamento</th></tr></thead>
-            <tbody>
-                {% for r in reservas %}
-                <tr>
-                    <td><strong>{{ r.cliente_nome }}</strong></td>
-                    <td>{{ r.telefone or '-' }}</td>
-                    <td>{{ r.produto_descricao }}</td>
-                    <td>{{ r.quantidade }}</td>
-                    <td>{{ formatar_moeda(r.valor_total) }}</td>
-                    <td>{{ formatar_data(r.data_registro) }}</td>
-                    <td>
-                        <form method="POST" action="{{ url_for('estoque.estoque_confirmar_pagamento', id=r.id) }}" class="d-flex gap-1">
-                            <select name="forma_pagamento" class="form-select form-select-sm" required style="width:110px">
-                                <option value="">Pagto</option>
-                                <option value="Pix">Pix</option>
-                                <option value="Espécie">Espécie</option>
-                            </select>
-                            <button class="btn btn-sm btn-success">Confirmar</button>
-                        </form>
-                    </td>
-                </tr>
-                {% else %}<tr><td colspan="7" class="text-center">Nenhuma encomenda pendente</td></tr>{% endfor %}
-            </tbody>
-        </table>
+<div class="tab-content" id="estoqueTabsContent">
+    <div class="tab-pane fade show active" id="tab-produtos" role="tabpanel">
+        <div class="card p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>SKU</th><th>Descrição</th><th>Tipo</th><th>Qtd disponível</th><th>Preço</th><th>Vender / Encomendar</th><th>Ações</th></tr></thead>
+                    <tbody>
+                        {% for p in produtos %}
+                        <tr {% if p.quantidade <= p.estoque_minimo %}class="table-low-stock"{% endif %}>
+                            <td>{{ p.sku }}</td>
+                            <td><strong>{{ p.descricao }}</strong></td>
+                            <td>{{ p.tipo or '-' }}</td>
+                            <td><strong>{{ p.quantidade }}</strong></td>
+                            <td>{{ formatar_moeda(p.preco_venda) }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('estoque.estoque_vender') }}" class="row g-1">
+                                    <input type="hidden" name="produto_id" value="{{ p.id }}">
+                                    <div class="col-md-3"><input name="cliente_nome" class="form-control form-control-sm" placeholder="Nome do cliente" required></div>
+                                    <div class="col-md-2"><input name="telefone" class="form-control form-control-sm" placeholder="Telefone"></div>
+                                    <div class="col-md-1"><input name="quantidade" type="number" class="form-control form-control-sm" value="1" min="1" max="{{ p.quantidade }}"></div>
+                                    <div class="col-md-2">
+                                        <select name="forma_pagamento" class="form-select form-select-sm">
+                                            <option value="">Encomenda (paga depois)</option>
+                                            <option value="Pix">Pix (paga agora)</option>
+                                            <option value="Espécie">Espécie (paga agora)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button class="btn btn-sm btn-success w-100" {% if p.quantidade <= 0 %}disabled{% endif %}>Registrar</button>
+                                    </div>
+                                </form>
+                            </td>
+                            <td><a href="{{ url_for('estoque.estoque_excluir', id=p.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza?')"><i class="fas fa-trash"></i></a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-</div>
 
-<h5>✅ Vendas Recentes</h5>
-<div class="card p-0">
-    <div class="table-responsive">
-        <table class="table table-sm mb-0">
-            <thead><tr><th>Cliente</th><th>Telefone</th><th>Produto</th><th>Valor</th><th>Pagamento</th><th>Data</th></tr></thead>
-            <tbody>
-                {% for v in vendas_recentes %}
-                <tr><td>{{ v.cliente_nome }}</td><td>{{ v.telefone or '-' }}</td><td>{{ v.produto_descricao }}</td><td>{{ formatar_moeda(v.valor_total) }}</td><td>{{ v.forma_pagamento }}</td><td>{{ formatar_data(v.data_pagamento) }}</td></tr>
-                {% else %}<tr><td colspan="6" class="text-center">Nenhuma venda registrada</td></tr>{% endfor %}
-            </tbody>
-        </table>
+    <div class="tab-pane fade" id="tab-encomendas" role="tabpanel">
+        <p class="text-muted small">Encomendas ficam separadas do estoque, aguardando pagamento na retirada.</p>
+        <div class="card p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>Cliente</th><th>Telefone</th><th>Produto</th><th>Qtd</th><th>Valor</th><th>Registrado em</th><th>Confirmar Pagamento</th></tr></thead>
+                    <tbody>
+                        {% for r in reservas %}
+                        <tr>
+                            <td><strong>{{ r.cliente_nome }}</strong></td>
+                            <td>{{ r.telefone or '-' }}</td>
+                            <td>{{ r.produto_descricao }}</td>
+                            <td>{{ r.quantidade }}</td>
+                            <td>{{ formatar_moeda(r.valor_total) }}</td>
+                            <td>{{ formatar_data(r.data_registro) }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('estoque.estoque_confirmar_pagamento', id=r.id) }}" class="d-flex gap-1">
+                                    <select name="forma_pagamento" class="form-select form-select-sm" required style="width:130px">
+                                        <option value="">Pagamento</option>
+                                        <option value="Pix">Pix</option>
+                                        <option value="Espécie">Espécie</option>
+                                    </select>
+                                    <button class="btn btn-sm btn-success">Confirmar</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}<tr><td colspan="7" class="text-center">Nenhuma encomenda pendente</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tab-vendas" role="tabpanel">
+        <div class="card p-0">
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Cliente</th><th>Telefone</th><th>Produto</th><th>Valor</th><th>Pagamento</th><th>Data</th></tr></thead>
+                    <tbody>
+                        {% for v in vendas_recentes %}
+                        <tr><td>{{ v.cliente_nome }}</td><td>{{ v.telefone or '-' }}</td><td>{{ v.produto_descricao }}</td><td>{{ formatar_moeda(v.valor_total) }}</td><td>{{ v.forma_pagamento }}</td><td>{{ formatar_data(v.data_pagamento) }}</td></tr>
+                        {% else %}<tr><td colspan="6" class="text-center">Nenhuma venda registrada</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
