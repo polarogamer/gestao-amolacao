@@ -6,7 +6,7 @@
 </div>
 
 <div class="row g-3">
-    <div class="col-md-4 col-12">
+    <div class="col-md-3 col-6">
         <a href="{{ url_for('entrada.entrada') }}" class="stat-card">
             <div class="stat-card__icon"><i class="fas fa-inbox"></i></div>
             <div>
@@ -15,7 +15,7 @@
             </div>
         </a>
     </div>
-    <div class="col-md-4 col-12">
+    <div class="col-md-3 col-6">
         <a href="{{ url_for('saida.saida') }}" class="stat-card stat-card--success">
             <div class="stat-card__icon"><i class="fas fa-outdent"></i></div>
             <div>
@@ -24,7 +24,7 @@
             </div>
         </a>
     </div>
-    <div class="col-md-4 col-12">
+    <div class="col-md-3 col-6">
         <a href="{{ url_for('relatorio.relatorio') }}" class="stat-card stat-card--warning">
             <div class="stat-card__icon"><i class="fas fa-hourglass-half"></i></div>
             <div>
@@ -33,18 +33,43 @@
             </div>
         </a>
     </div>
-</div>
-
-<div class="section-title">Faturamento do dia</div>
-<div class="row g-3">
-    <div class="col-md-4 col-12">
+    <div class="col-md-3 col-6">
         <a href="{{ url_for('caixa.caixa') }}" class="stat-card stat-card--info">
             <div class="stat-card__icon"><i class="fas fa-coins"></i></div>
             <div>
-                <div class="stat-card__value">{{ faturamento }}</div>
-                <div class="stat-card__label">Caixa</div>
+                <div class="stat-card__value">{{ faturamento_hoje }}</div>
+                <div class="stat-card__label">Faturamento hoje</div>
             </div>
         </a>
+    </div>
+</div>
+
+<div class="section-title">Desempenho</div>
+<div class="card p-3">
+    <ul class="nav nav-tabs" id="dashTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-dia-btn" data-bs-toggle="tab" data-bs-target="#tab-dia" type="button" role="tab">Dia</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-semana-btn" data-bs-toggle="tab" data-bs-target="#tab-semana" type="button" role="tab">Semana</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-mes-btn" data-bs-toggle="tab" data-bs-target="#tab-mes" type="button" role="tab">Mês</button>
+        </li>
+    </ul>
+    <div class="tab-content pt-3">
+        <div class="tab-pane fade show active" id="tab-dia" role="tabpanel">
+            <p class="text-muted small mb-2">Entradas e saídas de hoje, por horário.</p>
+            <div style="height:320px"><canvas id="chartDia"></canvas></div>
+        </div>
+        <div class="tab-pane fade" id="tab-semana" role="tabpanel">
+            <p class="text-muted small mb-2">Entradas, saídas e faturamento desta semana (segunda a domingo).</p>
+            <div style="height:320px"><canvas id="chartSemana"></canvas></div>
+        </div>
+        <div class="tab-pane fade" id="tab-mes" role="tabpanel">
+            <p class="text-muted small mb-2">Entradas, saídas e faturamento deste mês, dia a dia.</p>
+            <div style="height:320px"><canvas id="chartMes"></canvas></div>
+        </div>
     </div>
 </div>
 
@@ -57,4 +82,61 @@
     <a href="{{ url_for('estoque.estoque') }}" class="quick-link"><i class="fas fa-box"></i>Estoque</a>
     <a href="{{ url_for('consumiveis.consumiveis') }}" class="quick-link"><i class="fas fa-microchip"></i>Consumíveis</a>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.js"></script>
+<script>
+const dadosDia = {{ grafico_dia | safe }};
+const dadosSemana = {{ grafico_semana | safe }};
+const dadosMes = {{ grafico_mes | safe }};
+
+Chart.defaults.font.family = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+Chart.defaults.color = '#6B7280';
+
+function configGrafico(data, comFaturamento) {
+    const datasets = [
+        { type: 'bar', label: 'Entradas', data: data.entradas, backgroundColor: '#0F4C81', borderRadius: 4, maxBarThickness: 34, yAxisID: 'y' },
+        { type: 'bar', label: 'Saídas', data: data.saidas, backgroundColor: '#0E8F5B', borderRadius: 4, maxBarThickness: 34, yAxisID: 'y' },
+    ];
+    const scales = {
+        y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#EEF0F3' }, title: { display: true, text: 'Peças' } },
+        x: { grid: { display: false } },
+    };
+    if (comFaturamento) {
+        datasets.push({
+            type: 'line', label: 'Faturamento (R$)', data: data.faturamento,
+            borderColor: '#B4740E', backgroundColor: '#B4740E', pointBackgroundColor: '#B4740E',
+            tension: 0.3, yAxisID: 'y1',
+        });
+        scales.y1 = {
+            beginAtZero: true, position: 'right',
+            grid: { drawOnChartArea: false },
+            ticks: { callback: (v) => 'R$ ' + v },
+            title: { display: true, text: 'Faturamento' },
+        };
+    }
+    return {
+        data: { labels: data.labels, datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: { legend: { position: 'bottom' } },
+            scales,
+        },
+    };
+}
+
+const graficosCriados = {};
+function criarGrafico(canvasId, data, comFaturamento) {
+    if (graficosCriados[canvasId]) return;
+    const ctx = document.getElementById(canvasId);
+    graficosCriados[canvasId] = new Chart(ctx, configGrafico(data, comFaturamento));
+}
+
+criarGrafico('chartDia', dadosDia, false);
+document.getElementById('tab-semana-btn').addEventListener('shown.bs.tab', () => criarGrafico('chartSemana', dadosSemana, true));
+document.getElementById('tab-mes-btn').addEventListener('shown.bs.tab', () => criarGrafico('chartMes', dadosMes, true));
+</script>
 {% endblock %}
