@@ -20,7 +20,7 @@
         <div class="row mt-3">
             <div class="col-md-6"><label class="form-label">O que trouxe?</label>
                 <select name="codigo_servico" id="codigo_servico" class="form-select" onchange="sugerirPreco()">
-                    <option value="AT" data-preco="15,00">AT - Alicate</option>
+                    <option value="AT" data-preco="20,00">AT - Alicate</option>
                     <option value="T" data-preco="15,00">T - Tesoura</option>
                     <option value="TP" data-preco="5,00">TP - Tesoura Pequena</option>
                     <option value="TM" data-preco="15,00">TM - Tesoura Média</option>
@@ -32,7 +32,7 @@
         </div>
         <div class="row mt-3">
             <div class="col-md-3"><label class="form-label">Quantidade</label><input name="quantidade" type="number" class="form-control" value="1" id="qtd" onchange="calcTotal()" min="1"></div>
-            <div class="col-md-3"><label class="form-label">Valor Unitário (R$)</label><input name="valor_unitario" class="form-control" placeholder="0,00" id="vu" onchange="calcTotal()" value="15,00"></div>
+            <div class="col-md-3"><label class="form-label">Valor Unitário (R$)</label><input name="valor_unitario" class="form-control" placeholder="0,00" id="vu" onchange="calcTotal()" value="20,00"></div>
             <div class="col-md-3"><label class="form-label">Valor Total (R$)</label><input name="valor_total" class="form-control" id="total" readonly style="background:#e9ecef"></div>
             <div class="col-md-3"><label class="form-label">Data Prometida</label><input name="data_prometida" type="date" class="form-control" value="{{ (datetime.now() + timedelta(days=2)).strftime('%Y-%m-%d') }}"></div>
         </div>

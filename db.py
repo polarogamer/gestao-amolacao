@@ -141,6 +141,15 @@ def init_db():
         )
     ''')
 
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS banco_clientes (
+            id SERIAL PRIMARY KEY,
+            nome TEXT NOT NULL,
+            telefone TEXT,
+            data_registro DATE DEFAULT CURRENT_DATE
+        )
+    ''')
+
     # Dados iniciais - consumíveis
     cur.execute("SELECT COUNT(*) AS c FROM consumiveis")
     if cur.fetchone()["c"] == 0:

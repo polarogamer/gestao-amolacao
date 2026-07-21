@@ -30,6 +30,7 @@
                     <a class="nav-link {% if request.endpoint == 'saida.saida' %}active{% endif %}" href="{{ url_for('saida.saida') }}"><i class="fas fa-outdent"></i>Saída</a>
                     <a class="nav-link {% if request.endpoint == 'relatorio.relatorio' %}active{% endif %}" href="{{ url_for('relatorio.relatorio') }}"><i class="fas fa-file-alt"></i>Relatório</a>
                     <a class="nav-link {% if request.endpoint == 'clientes.clientes' %}active{% endif %}" href="{{ url_for('clientes.clientes') }}"><i class="fas fa-users"></i>Clientes</a>
+                    <a class="nav-link {% if request.endpoint == 'clientes.banco_clientes' %}active{% endif %}" href="{{ url_for('clientes.banco_clientes') }}"><i class="fas fa-address-book"></i>Banco de Clientes</a>
 
                     <div class="nav-section-title">Financeiro</div>
                     <a class="nav-link {% if request.endpoint == 'caixa.caixa' %}active{% endif %}" href="{{ url_for('caixa.caixa') }}"><i class="fas fa-coins"></i>Caixa</a>
