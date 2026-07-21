@@ -146,9 +146,11 @@ def init_db():
             id SERIAL PRIMARY KEY,
             nome TEXT NOT NULL,
             telefone TEXT,
-            data_registro DATE DEFAULT CURRENT_DATE
+            data_registro DATE DEFAULT CURRENT_DATE,
+            quantidade_total INTEGER DEFAULT 0
         )
     ''')
+    cur.execute("ALTER TABLE banco_clientes ADD COLUMN IF NOT EXISTS quantidade_total INTEGER DEFAULT 0")
 
     # Dados iniciais - consumíveis
     cur.execute("SELECT COUNT(*) AS c FROM consumiveis")

@@ -4,14 +4,20 @@
     <h1><i class="fas fa-address-book"></i>Banco de Clientes</h1>
 </div>
 <div class="info-bar small">Registro permanente de nome e telefone dos clientes que já pagaram alguma vez. Preenchido automaticamente quando um pagamento é confirmado na Saída — não é apagado no fechamento do dia.</div>
+<div class="card p-3 mb-3">
+    <form method="GET" class="row g-2">
+        <div class="col-md-9"><input name="busca" value="{{ busca }}" class="form-control" placeholder="Buscar por nome (ex: maria)"></div>
+        <div class="col-md-3"><button type="submit" class="btn btn-outline-primary w-100"><i class="fas fa-search me-2"></i>Buscar</button></div>
+    </form>
+</div>
 <div class="card p-0">
     <div class="table-responsive">
         <table class="table table-hover mb-0">
-            <thead><tr><th>Nome</th><th>Telefone</th><th>Cliente desde</th></tr></thead>
+            <thead><tr><th>Nome</th><th>Telefone</th><th>Alicates Amolados</th><th>Cliente desde</th></tr></thead>
             <tbody>
                 {% for r in registros %}
-                <tr><td><strong>{{ r.nome }}</strong></td><td>{{ r.telefone or '-' }}</td><td>{{ formatar_data(r.data_registro) }}</td></tr>
-                {% else %}<tr><td colspan="3" class="text-center">Nenhum cliente registrado ainda</td></tr>
+                <tr><td><strong>{{ r.nome }}</strong></td><td>{{ r.telefone or '-' }}</td><td>{{ r.quantidade_total or 0 }}</td><td>{{ formatar_data(r.data_registro) }}</td></tr>
+                {% else %}<tr><td colspan="4" class="text-center">{% if busca %}Nenhum cliente encontrado para "{{ busca }}"{% else %}Nenhum cliente registrado ainda{% endif %}</td></tr>
                 {% endfor %}
             </tbody>
         </table>

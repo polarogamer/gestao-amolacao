@@ -49,10 +49,14 @@ def excluir_pedido(id):
 @login_required
 def banco_clientes():
     """Registro permanente (nome + telefone) de clientes que já pagaram alguma vez."""
+    busca = request.args.get('busca', '').strip()
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM banco_clientes ORDER BY nome")
+    if busca:
+        cur.execute("SELECT * FROM banco_clientes WHERE nome ILIKE %s ORDER BY nome", (f'%{busca}%',))
+    else:
+        cur.execute("SELECT * FROM banco_clientes ORDER BY nome")
     registros = cur.fetchall()
     cur.close()
     conn.close()
-    return render_template('banco_clientes.html', registros=registros, formatar_data=formatar_data_br)
+    return render_template('banco_clientes.html', registros=registros, busca=busca, formatar_data=formatar_data_br)

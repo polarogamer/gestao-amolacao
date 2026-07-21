@@ -103,8 +103,12 @@ CREATE TABLE IF NOT EXISTS banco_clientes (
     id SERIAL PRIMARY KEY,
     nome TEXT NOT NULL,
     telefone TEXT,
-    data_registro DATE DEFAULT CURRENT_DATE
+    data_registro DATE DEFAULT CURRENT_DATE,
+    quantidade_total INTEGER DEFAULT 0
 );
+-- Idempotente: adiciona a coluna em bancos que já tinham a tabela criada
+-- antes dela existir (ex: produção, que não roda init_db automaticamente).
+ALTER TABLE banco_clientes ADD COLUMN IF NOT EXISTS quantidade_total INTEGER DEFAULT 0;
 
 -- Dados iniciais
 INSERT INTO consumiveis (nome, quantidade, unidade, estoque_minimo, preco_unitario)
