@@ -97,18 +97,25 @@ CREATE TABLE IF NOT EXISTS fechamentos_diarios (
     fechado_em TEXT
 );
 
--- Registro permanente de clientes que já pagaram pelo menos uma vez
--- (nome + telefone), para consulta rápida sem depender dos pedidos do dia.
+-- Histórico permanente de retiradas já pagas: um registro por retirada
+-- (nome, telefone, serviço/quantidade e observação daquele pedido),
+-- para consulta rápida sem depender dos pedidos do dia.
 CREATE TABLE IF NOT EXISTS banco_clientes (
     id SERIAL PRIMARY KEY,
     nome TEXT NOT NULL,
     telefone TEXT,
+    codigo_servico TEXT,
+    quantidade INTEGER DEFAULT 1,
+    observacao TEXT,
     data_registro DATE DEFAULT CURRENT_DATE,
     quantidade_total INTEGER DEFAULT 0
 );
--- Idempotente: adiciona a coluna em bancos que já tinham a tabela criada
--- antes dela existir (ex: produção, que não roda init_db automaticamente).
+-- Idempotente: adiciona as colunas em bancos que já tinham a tabela criada
+-- antes delas existirem (ex: produção, que não roda init_db automaticamente).
 ALTER TABLE banco_clientes ADD COLUMN IF NOT EXISTS quantidade_total INTEGER DEFAULT 0;
+ALTER TABLE banco_clientes ADD COLUMN IF NOT EXISTS codigo_servico TEXT;
+ALTER TABLE banco_clientes ADD COLUMN IF NOT EXISTS quantidade INTEGER DEFAULT 1;
+ALTER TABLE banco_clientes ADD COLUMN IF NOT EXISTS observacao TEXT;
 
 -- Dados iniciais
 INSERT INTO consumiveis (nome, quantidade, unidade, estoque_minimo, preco_unitario)

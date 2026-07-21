@@ -31,23 +31,14 @@ def _finalizar_entrega(conn, os_row, forma_pagamento):
         ''', (hoje, 'entrada', f'Pagamento OS {os_row["numero_os"]} - {os_row["cliente_nome"]}',
               'Serviço', os_row['valor_total'], forma_pagamento, os_row['id']))
 
-    # Registra/atualiza o cliente no banco de clientes permanente assim que
-    # ele paga, somando a quantidade de itens amolados ao total dele.
+    # Registra no banco de clientes permanente: um registro por retirada,
+    # com o serviço/quantidade (ex: "AT" x2) e a observação daquele pedido.
     cur.execute(
-        "SELECT id FROM banco_clientes WHERE nome = %s AND telefone IS NOT DISTINCT FROM %s",
-        (os_row['cliente_nome'], os_row['telefone']),
+        "INSERT INTO banco_clientes (nome, telefone, codigo_servico, quantidade, observacao) "
+        "VALUES (%s, %s, %s, %s, %s)",
+        (os_row['cliente_nome'], os_row['telefone'], os_row['codigo_servico'],
+         os_row['quantidade'], os_row['observacao']),
     )
-    banco_row = cur.fetchone()
-    if banco_row:
-        cur.execute(
-            "UPDATE banco_clientes SET quantidade_total = quantidade_total + %s WHERE id = %s",
-            (os_row['quantidade'], banco_row['id']),
-        )
-    else:
-        cur.execute(
-            "INSERT INTO banco_clientes (nome, telefone, quantidade_total) VALUES (%s, %s, %s)",
-            (os_row['cliente_nome'], os_row['telefone'], os_row['quantidade']),
-        )
     conn.commit()
     cur.close()
 

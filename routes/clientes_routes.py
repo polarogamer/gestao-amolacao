@@ -48,15 +48,29 @@ def excluir_pedido(id):
 @bp.route('/clientes/banco')
 @login_required
 def banco_clientes():
-    """Registro permanente (nome + telefone) de clientes que já pagaram alguma vez."""
+    """Histórico permanente de retiradas: um registro por retirada já paga."""
     busca = request.args.get('busca', '').strip()
     conn = get_db()
     cur = conn.cursor()
     if busca:
-        cur.execute("SELECT * FROM banco_clientes WHERE nome ILIKE %s ORDER BY nome", (f'%{busca}%',))
+        cur.execute("SELECT * FROM banco_clientes WHERE nome ILIKE %s ORDER BY id DESC", (f'%{busca}%',))
     else:
-        cur.execute("SELECT * FROM banco_clientes ORDER BY nome")
+        cur.execute("SELECT * FROM banco_clientes ORDER BY id DESC")
     registros = cur.fetchall()
     cur.close()
     conn.close()
     return render_template('banco_clientes.html', registros=registros, busca=busca, formatar_data=formatar_data_br)
+
+
+@bp.route('/clientes/banco/excluir/<int:id>')
+@login_required
+def excluir_banco_cliente(id):
+    """Remove um registro do histórico permanente de clientes."""
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM banco_clientes WHERE id = %s", (id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+    flash('Registro excluído do Banco de Clientes!', 'success')
+    return redirect(url_for('clientes.banco_clientes'))
