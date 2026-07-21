@@ -19,7 +19,7 @@
                 <tr>
                     <td><strong>{{ r.nome }}</strong></td>
                     <td>{{ r.telefone or '-' }}</td>
-                    <td>{{ r.codigo_servico or '-' }} x{{ r.quantidade or 1 }}</td>
+                    <td>{% if r.codigo_servico %}{{ r.codigo_servico }}{{ r.quantidade or 1 }}{% else %}-{% endif %}</td>
                     <td>{{ r.observacao or '-' }}</td>
                     <td>{{ formatar_data(r.data_registro) }}</td>
                     <td><a href="{{ url_for('clientes.excluir_banco_cliente', id=r.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Excluir este registro do histórico de {{ r.nome }}?')"><i class="fas fa-trash"></i></a></td>
