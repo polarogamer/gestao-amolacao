@@ -1,8 +1,8 @@
 import random
-from datetime import datetime, timedelta
+from datetime import timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 
-from db import get_db, parse_valor, parse_inteiro
+from db import get_db, parse_valor, parse_inteiro, agora_br, datetime_br
 from auth import login_required
 from routes.dashboard_routes import contar_entradas_hoje, get_config, set_config
 
@@ -20,7 +20,7 @@ def gerar_codigo_unico(conn):
 
 
 def gerar_numero_os(conn):
-    ano = datetime.now().year
+    ano = agora_br().year
     cur = conn.cursor()
     cur.execute(
         "SELECT COUNT(*) AS c FROM ordens_servico WHERE EXTRACT(YEAR FROM data_entrada) = %s",
@@ -88,7 +88,7 @@ def entrada():
         else:
             cliente_id = cliente['id']
 
-        agora = datetime.now()
+        agora = agora_br()
         hoje = agora.strftime('%Y-%m-%d')
         hora_entrada = agora.strftime('%H:%M')
         cur.execute('''
@@ -119,7 +119,7 @@ def entrada():
         return redirect(url_for('entrada.entrada'))
 
     conn.close()
-    return render_template('entrada.html', datetime=datetime, timedelta=timedelta,
+    return render_template('entrada.html', datetime=datetime_br, timedelta=timedelta,
                            qtd_hoje=qtd_hoje, meta_diaria=meta_diaria)
 
 

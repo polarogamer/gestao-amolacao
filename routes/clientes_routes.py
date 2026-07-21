@@ -1,7 +1,6 @@
-from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 
-from db import get_db, formatar_data_br
+from db import get_db, formatar_data_br, agora_br, datetime_br
 from auth import login_required
 
 bp = Blueprint('clientes', __name__)
@@ -12,7 +11,7 @@ bp = Blueprint('clientes', __name__)
 def clientes():
     """Clientes do dia: pedidos de hoje que ainda não foram pagos/retirados.
     Some da lista sozinho assim que o cliente paga na Saída."""
-    hoje = datetime.now().strftime('%Y-%m-%d')
+    hoje = agora_br().strftime('%Y-%m-%d')
     conn = get_db()
     cur = conn.cursor()
     cur.execute('''
@@ -25,7 +24,7 @@ def clientes():
     pedidos_hoje = cur.fetchall()
     cur.close()
     conn.close()
-    return render_template('clientes.html', pedidos=pedidos_hoje, formatar_data=formatar_data_br, datetime=datetime)
+    return render_template('clientes.html', pedidos=pedidos_hoje, formatar_data=formatar_data_br, datetime=datetime_br)
 
 
 @bp.route('/clientes/excluir/<int:id>')

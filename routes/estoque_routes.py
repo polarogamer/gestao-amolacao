@@ -1,7 +1,6 @@
-from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 
-from db import get_db, formatar_moeda, formatar_data_br, parse_valor, parse_inteiro
+from db import get_db, formatar_moeda, formatar_data_br, parse_valor, parse_inteiro, agora_br
 from auth import login_required
 
 bp = Blueprint('estoque', __name__)
@@ -112,7 +111,7 @@ def estoque_vender():
 
     valor_unitario = produto['preco_venda'] or 0
     valor_total = float(valor_unitario) * quantidade
-    hoje = datetime.now().strftime('%Y-%m-%d')
+    hoje = agora_br().strftime('%Y-%m-%d')
 
     cur.execute("UPDATE estoque_alicates SET quantidade = quantidade - %s WHERE id = %s", (quantidade, produto_id))
 
@@ -164,7 +163,7 @@ def estoque_confirmar_pagamento(id):
         conn.close()
         return redirect(url_for('estoque.estoque'))
 
-    hoje = datetime.now().strftime('%Y-%m-%d')
+    hoje = agora_br().strftime('%Y-%m-%d')
     cur.execute("UPDATE vendas_alicates SET status = 'pago', forma_pagamento = %s, data_pagamento = %s WHERE id = %s",
                 (forma_pagamento, hoje, id))
 

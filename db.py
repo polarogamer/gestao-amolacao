@@ -6,7 +6,7 @@ Usa PostgreSQL (Supabase) via psycopg2, com cursor que devolve dicts
 import os
 import psycopg2
 import psycopg2.extras
-from datetime import datetime
+from datetime import datetime, timedelta
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
@@ -195,7 +195,7 @@ def init_db():
         cur.execute('''
             INSERT INTO movimentacoes_caixa (data, tipo, descricao, categoria, valor, forma_pagamento)
             VALUES (%s, 'entrada', 'Saldo inicial de caixa', 'Abertura', 120.00, 'Dinheiro')
-        ''', (datetime.now().strftime('%Y-%m-%d'),))
+        ''', (agora_br().strftime('%Y-%m-%d'),))
 
     conn.commit()
     cur.close()
@@ -203,6 +203,24 @@ def init_db():
 
 
 # ==================== FUNÇÕES UTILITÁRIAS COMPARTILHADAS ====================
+
+def agora_br():
+    """Hora atual no fuso de Brasília (UTC-3, sem horário de verão desde 2019).
+    O servidor (Vercel) roda em UTC, então sem esse ajuste data e hora
+    registradas ficam à frente do horário real de quem usa o sistema."""
+    return datetime.now() - timedelta(hours=3)
+
+
+class _RelogioBR:
+    """Substitui o módulo `datetime` passado para os templates, para que
+    `datetime.now()` usado direto no Jinja também já venha ajustado."""
+    @staticmethod
+    def now():
+        return agora_br()
+
+
+datetime_br = _RelogioBR()
+
 
 def formatar_moeda(valor):
     if not valor:

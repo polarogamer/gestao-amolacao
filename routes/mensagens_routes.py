@@ -1,7 +1,6 @@
-from datetime import datetime
 from flask import Blueprint, render_template
 
-from db import get_db, formatar_moeda
+from db import get_db, formatar_moeda, datetime_br
 from auth import login_required
 
 bp = Blueprint('mensagens', __name__)
@@ -26,4 +25,4 @@ def mensagens():
     mensagem_padrao = "Olá, aqui é o Amorin Alicates! O seu alicate já está pronto. Ficamos até às 15h. Aguardamos você!"
 
     return render_template('mensagens.html', prontos=prontos_hoje, mensagem_padrao=mensagem_padrao,
-                           formatar_moeda=formatar_moeda, datetime=datetime)
+                           formatar_moeda=formatar_moeda, datetime=datetime_br)

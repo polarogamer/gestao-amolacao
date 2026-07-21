@@ -1,7 +1,6 @@
-from datetime import datetime
 from flask import Blueprint, render_template
 
-from db import get_db, formatar_moeda
+from db import get_db, formatar_moeda, agora_br, datetime_br
 from auth import login_required
 
 bp = Blueprint('dashboard', __name__)
@@ -9,7 +8,7 @@ bp = Blueprint('dashboard', __name__)
 
 def contar_entradas_hoje(conn):
     """Soma a quantidade de PEÇAS (não de ordens) recebidas hoje - usado para a meta diária."""
-    hoje = datetime.now().strftime('%Y-%m-%d')
+    hoje = agora_br().strftime('%Y-%m-%d')
     cur = conn.cursor()
     cur.execute("SELECT COALESCE(SUM(quantidade), 0) AS total FROM ordens_servico WHERE data_entrada = %s", (hoje,))
     total = cur.fetchone()['total'] or 0
@@ -40,7 +39,7 @@ def set_config(conn, chave, valor):
 @login_required
 def dashboard():
     conn = get_db()
-    hoje = datetime.now().strftime('%Y-%m-%d')
+    hoje = agora_br().strftime('%Y-%m-%d')
     cur = conn.cursor()
 
     # Ordens que entraram hoje (nº de clientes atendidos)
@@ -53,7 +52,7 @@ def dashboard():
     cur.execute("SELECT COUNT(*) AS c FROM ordens_servico WHERE status != 'Pago'")
     pendentes = cur.fetchone()['c'] or 0
 
-    mes_atual = datetime.now().strftime('%Y-%m')
+    mes_atual = agora_br().strftime('%Y-%m')
     cur.execute(
         "SELECT COALESCE(SUM(valor), 0) AS s FROM movimentacoes_caixa "
         "WHERE tipo='entrada' AND to_char(data, 'YYYY-MM') = %s",
@@ -74,5 +73,5 @@ def dashboard():
         faturamento=formatar_moeda(faturamento),
         qtd_hoje=qtd_hoje,
         meta_diaria=meta_diaria,
-        datetime=datetime,
+        datetime=datetime_br,
     )

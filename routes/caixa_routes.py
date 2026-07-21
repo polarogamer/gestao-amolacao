@@ -1,7 +1,6 @@
-from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 
-from db import get_db, formatar_moeda, formatar_data_br, parse_valor
+from db import get_db, formatar_moeda, formatar_data_br, parse_valor, agora_br
 from auth import login_required
 
 bp = Blueprint('caixa', __name__)
@@ -42,7 +41,7 @@ def caixa_lancar():
         INSERT INTO movimentacoes_caixa (data, tipo, descricao, categoria, valor, forma_pagamento)
         VALUES (%s, %s, %s, %s, %s, %s)
     ''', (
-        datetime.now().strftime('%Y-%m-%d'), tipo, descricao,
+        agora_br().strftime('%Y-%m-%d'), tipo, descricao,
         request.form.get('categoria', 'Outros'), valor,
         request.form.get('forma_pagamento', 'Dinheiro'),
     ))

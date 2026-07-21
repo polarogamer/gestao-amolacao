@@ -1,7 +1,6 @@
-from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 
-from db import get_db, formatar_moeda, formatar_data_br
+from db import get_db, formatar_moeda, formatar_data_br, agora_br
 
 from auth import login_required
 
@@ -13,7 +12,7 @@ def _finalizar_entrega(conn, os_row, forma_pagamento):
     (os_row['forma_pagamento'] já preenchido), o lançamento no caixa já foi
     feito lá - aqui só confirma a retirada, sem duplicar o valor no caixa."""
     cur = conn.cursor()
-    agora = datetime.now()
+    agora = agora_br()
     hoje = agora.strftime('%Y-%m-%d')
     hora_entrega = agora.strftime('%H:%M')
 

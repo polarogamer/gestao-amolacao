@@ -1,7 +1,6 @@
-from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 
-from db import get_db, formatar_moeda, formatar_data_br
+from db import get_db, formatar_moeda, formatar_data_br, agora_br, datetime_br
 from auth import login_required
 
 bp = Blueprint('relatorio', __name__)
@@ -10,7 +9,7 @@ bp = Blueprint('relatorio', __name__)
 @bp.route('/relatorio')
 @login_required
 def relatorio():
-    hoje = datetime.now().strftime('%Y-%m-%d')
+    hoje = agora_br().strftime('%Y-%m-%d')
     conn = get_db()
     cur = conn.cursor()
 
@@ -56,14 +55,14 @@ def relatorio():
     return render_template(
         'relatorio.html', entradas=entradas, saidas=saidas, pendentes=pendentes,
         total_faturado=total_faturado, vendas_hoje=vendas_hoje, ja_fechado_hoje=ja_fechado_hoje,
-        historico=historico, formatar_moeda=formatar_moeda, formatar_data=formatar_data_br, datetime=datetime,
+        historico=historico, formatar_moeda=formatar_moeda, formatar_data=formatar_data_br, datetime=datetime_br,
     )
 
 
 @bp.route('/relatorio/fechar', methods=['POST'])
 @login_required
 def relatorio_fechar():
-    hoje = datetime.now().strftime('%Y-%m-%d')
+    hoje = agora_br().strftime('%Y-%m-%d')
     conn = get_db()
     cur = conn.cursor()
 
@@ -93,7 +92,7 @@ def relatorio_fechar():
     cur.execute('''
         INSERT INTO fechamentos_diarios (data, total_entradas, total_saidas, faturamento_dia, pendentes, fechado_em)
         VALUES (%s, %s, %s, %s, %s, %s)
-    ''', (hoje, total_entradas, total_saidas, faturamento_dia, pendentes, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+    ''', (hoje, total_entradas, total_saidas, faturamento_dia, pendentes, agora_br().strftime('%Y-%m-%d %H:%M:%S')))
 
     # Limpa OS já pagas/retiradas e clientes sem pendências (mesmo comportamento do sistema original)
     cur.execute("DELETE FROM ordens_servico WHERE status = 'Pago'")
