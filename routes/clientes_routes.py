@@ -31,13 +31,14 @@ def clientes():
 @bp.route('/clientes/excluir/<int:id>')
 @login_required
 def excluir_pedido(id):
-    """Exclui um pedido ainda não pago (limpeza manual, ex: cadastro errado).
-    Se o cliente já tinha pago antecipado na Entrada, remove também o
-    lançamento correspondente no caixa para não deixar valor "fantasma"."""
+    """Exclui um pedido, pago ou não (limpeza manual, ex: cadastro errado).
+    Remove também o lançamento correspondente no caixa (se houver) para não
+    deixar valor "fantasma" por lá. O histórico em Banco de Clientes não é
+    afetado - continua registrado mesmo se o pedido original for excluído."""
     conn = get_db()
     cur = conn.cursor()
     cur.execute("DELETE FROM movimentacoes_caixa WHERE referencia_os_id = %s", (id,))
-    cur.execute("DELETE FROM ordens_servico WHERE id = %s AND status != 'Pago'", (id,))
+    cur.execute("DELETE FROM ordens_servico WHERE id = %s", (id,))
     conn.commit()
     cur.close()
     conn.close()
