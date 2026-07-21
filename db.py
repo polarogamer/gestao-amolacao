@@ -65,9 +65,13 @@ def init_db():
             data_entrega DATE,
             status TEXT DEFAULT 'Entrada',
             forma_pagamento TEXT,
-            observacao TEXT
+            observacao TEXT,
+            hora_entrada TEXT,
+            hora_entrega TEXT
         )
     ''')
+    cur.execute("ALTER TABLE ordens_servico ADD COLUMN IF NOT EXISTS hora_entrada TEXT")
+    cur.execute("ALTER TABLE ordens_servico ADD COLUMN IF NOT EXISTS hora_entrega TEXT")
 
     cur.execute('''
         CREATE TABLE IF NOT EXISTS estoque_alicates (
@@ -150,13 +154,15 @@ def init_db():
             quantidade INTEGER DEFAULT 1,
             observacao TEXT,
             data_registro DATE DEFAULT CURRENT_DATE,
-            quantidade_total INTEGER DEFAULT 0
+            quantidade_total INTEGER DEFAULT 0,
+            hora TEXT
         )
     ''')
     cur.execute("ALTER TABLE banco_clientes ADD COLUMN IF NOT EXISTS quantidade_total INTEGER DEFAULT 0")
     cur.execute("ALTER TABLE banco_clientes ADD COLUMN IF NOT EXISTS codigo_servico TEXT")
     cur.execute("ALTER TABLE banco_clientes ADD COLUMN IF NOT EXISTS quantidade INTEGER DEFAULT 1")
     cur.execute("ALTER TABLE banco_clientes ADD COLUMN IF NOT EXISTS observacao TEXT")
+    cur.execute("ALTER TABLE banco_clientes ADD COLUMN IF NOT EXISTS hora TEXT")
 
     # Dados iniciais - consumíveis
     cur.execute("SELECT COUNT(*) AS c FROM consumiveis")

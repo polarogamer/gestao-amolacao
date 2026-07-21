@@ -13,17 +13,19 @@ def _finalizar_entrega(conn, os_row, forma_pagamento):
     (os_row['forma_pagamento'] já preenchido), o lançamento no caixa já foi
     feito lá - aqui só confirma a retirada, sem duplicar o valor no caixa."""
     cur = conn.cursor()
-    hoje = datetime.now().strftime('%Y-%m-%d')
+    agora = datetime.now()
+    hoje = agora.strftime('%Y-%m-%d')
+    hora_entrega = agora.strftime('%H:%M')
 
     if os_row['forma_pagamento']:
         cur.execute(
-            "UPDATE ordens_servico SET status = 'Pago', data_entrega = %s WHERE id = %s",
-            (hoje, os_row['id']),
+            "UPDATE ordens_servico SET status = 'Pago', data_entrega = %s, hora_entrega = %s WHERE id = %s",
+            (hoje, hora_entrega, os_row['id']),
         )
     else:
         cur.execute(
-            "UPDATE ordens_servico SET status = 'Pago', data_entrega = %s, forma_pagamento = %s WHERE id = %s",
-            (hoje, forma_pagamento, os_row['id']),
+            "UPDATE ordens_servico SET status = 'Pago', data_entrega = %s, hora_entrega = %s, forma_pagamento = %s WHERE id = %s",
+            (hoje, hora_entrega, forma_pagamento, os_row['id']),
         )
         cur.execute('''
             INSERT INTO movimentacoes_caixa (data, tipo, descricao, categoria, valor, forma_pagamento, referencia_os_id)
@@ -32,12 +34,12 @@ def _finalizar_entrega(conn, os_row, forma_pagamento):
               'Serviço', os_row['valor_total'], forma_pagamento, os_row['id']))
 
     # Registra no banco de clientes permanente: um registro por retirada,
-    # com o serviço/quantidade (ex: "AT" x2) e a observação daquele pedido.
+    # com o serviço/quantidade (ex: "AT" x2), observação e horário da retirada.
     cur.execute(
-        "INSERT INTO banco_clientes (nome, telefone, codigo_servico, quantidade, observacao) "
-        "VALUES (%s, %s, %s, %s, %s)",
+        "INSERT INTO banco_clientes (nome, telefone, codigo_servico, quantidade, observacao, hora) "
+        "VALUES (%s, %s, %s, %s, %s, %s)",
         (os_row['cliente_nome'], os_row['telefone'], os_row['codigo_servico'],
-         os_row['quantidade'], os_row['observacao']),
+         os_row['quantidade'], os_row['observacao'], hora_entrega),
     )
     conn.commit()
     cur.close()

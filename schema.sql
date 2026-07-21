@@ -34,8 +34,12 @@ CREATE TABLE IF NOT EXISTS ordens_servico (
     data_entrega DATE,
     status TEXT DEFAULT 'Entrada',
     forma_pagamento TEXT,
-    observacao TEXT
+    observacao TEXT,
+    hora_entrada TEXT,
+    hora_entrega TEXT
 );
+ALTER TABLE ordens_servico ADD COLUMN IF NOT EXISTS hora_entrada TEXT;
+ALTER TABLE ordens_servico ADD COLUMN IF NOT EXISTS hora_entrega TEXT;
 
 CREATE TABLE IF NOT EXISTS estoque_alicates (
     id SERIAL PRIMARY KEY,
@@ -108,7 +112,8 @@ CREATE TABLE IF NOT EXISTS banco_clientes (
     quantidade INTEGER DEFAULT 1,
     observacao TEXT,
     data_registro DATE DEFAULT CURRENT_DATE,
-    quantidade_total INTEGER DEFAULT 0
+    quantidade_total INTEGER DEFAULT 0,
+    hora TEXT
 );
 -- Idempotente: adiciona as colunas em bancos que já tinham a tabela criada
 -- antes delas existirem (ex: produção, que não roda init_db automaticamente).
@@ -116,6 +121,7 @@ ALTER TABLE banco_clientes ADD COLUMN IF NOT EXISTS quantidade_total INTEGER DEF
 ALTER TABLE banco_clientes ADD COLUMN IF NOT EXISTS codigo_servico TEXT;
 ALTER TABLE banco_clientes ADD COLUMN IF NOT EXISTS quantidade INTEGER DEFAULT 1;
 ALTER TABLE banco_clientes ADD COLUMN IF NOT EXISTS observacao TEXT;
+ALTER TABLE banco_clientes ADD COLUMN IF NOT EXISTS hora TEXT;
 
 -- Dados iniciais
 INSERT INTO consumiveis (nome, quantidade, unidade, estoque_minimo, preco_unitario)

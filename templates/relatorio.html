@@ -41,8 +41,8 @@
         <div class="card p-0">
             <div class="table-responsive">
                 <table class="table table-sm mb-0">
-                    <thead><tr><th>#</th><th>Cliente</th><th>Código</th><th>Serviço</th><th>Ações</th></tr></thead>
-                    <tbody>{% for os in entradas %}<tr><td>{{ loop.index }}</td><td>{{ os.cliente_nome }}</td><td>#{{ os.codigo_seguranca }}</td><td>{{ os.codigo_servico }}{{ os.quantidade }}</td><td><a href="{{ url_for('clientes.excluir_pedido', id=os.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Excluir o pedido de {{ os.cliente_nome }}?')"><i class="fas fa-trash"></i></a></td></tr>{% else %}<tr><td colspan="5" class="text-center">Nenhuma entrada</td></tr>{% endfor %}</tbody>
+                    <thead><tr><th>#</th><th>Horário</th><th>Cliente</th><th>Código</th><th>Serviço</th><th>Ações</th></tr></thead>
+                    <tbody>{% for os in entradas %}<tr><td>{{ loop.index }}</td><td>{{ os.hora_entrada or '-' }}</td><td>{{ os.cliente_nome }}</td><td>#{{ os.codigo_seguranca }}</td><td>{{ os.codigo_servico }}{{ os.quantidade }}</td><td><a href="{{ url_for('clientes.excluir_pedido', id=os.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Excluir o pedido de {{ os.cliente_nome }}?')"><i class="fas fa-trash"></i></a></td></tr>{% else %}<tr><td colspan="6" class="text-center">Nenhuma entrada</td></tr>{% endfor %}</tbody>
                 </table>
             </div>
         </div>
@@ -52,8 +52,8 @@
         <div class="card p-0">
             <div class="table-responsive">
                 <table class="table table-sm mb-0">
-                    <thead><tr><th>Cliente</th><th>Código</th><th>Valor</th><th>Pagamento</th><th>Ações</th></tr></thead>
-                    <tbody>{% for os in saidas %}<tr><td>{{ os.cliente_nome }}</td><td>#{{ os.codigo_seguranca }}</td><td>{{ formatar_moeda(os.valor_total) }}</td><td>{{ os.forma_pagamento }}</td><td><a href="{{ url_for('clientes.excluir_pedido', id=os.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Excluir o pedido de {{ os.cliente_nome }}?')"><i class="fas fa-trash"></i></a></td></tr>{% else %}<tr><td colspan="5" class="text-center">Nenhuma saída</td></tr>{% endfor %}</tbody>
+                    <thead><tr><th>Horário</th><th>Cliente</th><th>Código</th><th>Valor</th><th>Pagamento</th><th>Ações</th></tr></thead>
+                    <tbody>{% for os in saidas %}<tr><td>{{ os.hora_entrega or '-' }}</td><td>{{ os.cliente_nome }}</td><td>#{{ os.codigo_seguranca }}</td><td>{{ formatar_moeda(os.valor_total) }}</td><td>{{ os.forma_pagamento }}</td><td><a href="{{ url_for('clientes.excluir_pedido', id=os.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Excluir o pedido de {{ os.cliente_nome }}?')"><i class="fas fa-trash"></i></a></td></tr>{% else %}<tr><td colspan="6" class="text-center">Nenhuma saída</td></tr>{% endfor %}</tbody>
                 </table>
             </div>
         </div>

@@ -13,10 +13,11 @@
 <div class="card p-0">
     <div class="table-responsive">
         <table class="table table-hover mb-0">
-            <thead><tr><th>Nome</th><th>Telefone</th><th>Serviço</th><th>Observação</th><th>Data</th><th>Ações</th></tr></thead>
+            <thead><tr><th>Horário</th><th>Nome</th><th>Telefone</th><th>Serviço</th><th>Observação</th><th>Data</th><th>Ações</th></tr></thead>
             <tbody>
                 {% for r in registros %}
                 <tr>
+                    <td>{{ r.hora or '-' }}</td>
                     <td><strong>{{ r.nome }}</strong></td>
                     <td>{{ r.telefone or '-' }}</td>
                     <td>{% if r.codigo_servico %}{{ r.codigo_servico }}{{ r.quantidade or 1 }}{% else %}-{% endif %}</td>
@@ -24,7 +25,7 @@
                     <td>{{ formatar_data(r.data_registro) }}</td>
                     <td><a href="{{ url_for('clientes.excluir_banco_cliente', id=r.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Excluir este registro do histórico de {{ r.nome }}?')"><i class="fas fa-trash"></i></a></td>
                 </tr>
-                {% else %}<tr><td colspan="6" class="text-center">{% if busca %}Nenhum cliente encontrado para "{{ busca }}"{% else %}Nenhum cliente registrado ainda{% endif %}</td></tr>
+                {% else %}<tr><td colspan="7" class="text-center">{% if busca %}Nenhum cliente encontrado para "{{ busca }}"{% else %}Nenhum cliente registrado ainda{% endif %}</td></tr>
                 {% endfor %}
             </tbody>
         </table>

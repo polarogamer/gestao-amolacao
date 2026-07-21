@@ -88,17 +88,19 @@ def entrada():
         else:
             cliente_id = cliente['id']
 
-        hoje = datetime.now().strftime('%Y-%m-%d')
+        agora = datetime.now()
+        hoje = agora.strftime('%Y-%m-%d')
+        hora_entrada = agora.strftime('%H:%M')
         cur.execute('''
             INSERT INTO ordens_servico (
                 cliente_id, numero_os, codigo_seguranca, codigo_servico, tipo_servico,
                 quantidade, valor_unitario, valor_total, data_entrada, data_prometida,
-                status, observacao, forma_pagamento
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
+                status, observacao, forma_pagamento, hora_entrada
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
         ''', (
             cliente_id, numero_os, codigo_seguranca, codigo_servico, tipo_servico,
             quantidade, valor_unitario, valor_total, hoje,
-            data_prometida, 'Entrada', observacao, forma_pagamento
+            data_prometida, 'Entrada', observacao, forma_pagamento, hora_entrada
         ))
         os_id = cur.fetchone()['id']
 
