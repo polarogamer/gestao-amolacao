@@ -97,6 +97,15 @@ CREATE TABLE IF NOT EXISTS fechamentos_diarios (
     fechado_em TEXT
 );
 
+-- Registro permanente de clientes que já pagaram pelo menos uma vez
+-- (nome + telefone), para consulta rápida sem depender dos pedidos do dia.
+CREATE TABLE IF NOT EXISTS banco_clientes (
+    id SERIAL PRIMARY KEY,
+    nome TEXT NOT NULL,
+    telefone TEXT,
+    data_registro DATE DEFAULT CURRENT_DATE
+);
+
 -- Dados iniciais
 INSERT INTO consumiveis (nome, quantidade, unidade, estoque_minimo, preco_unitario)
 SELECT * FROM (VALUES

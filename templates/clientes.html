@@ -1,18 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="page-header">
-    <h1><i class="fas fa-users"></i>Clientes</h1>
+    <h1><i class="fas fa-users"></i>Clientes do Dia — {{ datetime.now().strftime('%d/%m/%Y') }}</h1>
 </div>
-<div class="info-bar small">Clientes que já retiraram e pagaram tudo são removidos automaticamente do banco quando o dia é fechado (aba Relatório), para não acumular.</div>
+<div class="info-bar small">Mostra os pedidos de hoje que ainda não foram pagos/retirados. Assim que o cliente paga na aba Saída, ele some daqui automaticamente e entra no <a href="{{ url_for('clientes.banco_clientes') }}">Banco de Clientes</a>.</div>
 <div class="card p-0">
     <div class="table-responsive">
         <table class="table table-hover mb-0">
-            <thead><tr><th>Nome</th><th>Telefone</th><th>Código</th><th>Cadastro</th><th>Situação</th></tr></thead>
+            <thead><tr><th>Nome</th><th>Telefone</th><th>Código</th><th>Serviço</th><th>Observação</th><th>Situação</th></tr></thead>
             <tbody>
-                {% for c in clientes %}
-                <tr><td><strong>{{ c.nome }}</strong></td><td>{{ c.telefone or '-' }}</td><td><span class="badge-soft badge-soft-neutral">#{{ c.codigo_seguranca }}</span></td><td>{{ formatar_data(c.data_cadastro) }}</td>
-                <td>{% if c.pendentes > 0 %}<span class="badge-soft badge-soft-warning">{{ c.pendentes }} pendente(s)</span>{% else %}<span class="badge-soft badge-soft-success">Em dia</span>{% endif %}</td></tr>
-                {% else %}<tr><td colspan="5" class="text-center">Nenhum cliente cadastrado</td></tr>
+                {% for p in pedidos %}
+                <tr>
+                    <td><strong>{{ p.cliente_nome }}</strong></td>
+                    <td>{{ p.telefone or '-' }}</td>
+                    <td><span class="badge-soft badge-soft-neutral">#{{ p.codigo_seguranca }}</span></td>
+                    <td>{{ p.codigo_servico }} x{{ p.quantidade }}</td>
+                    <td>{{ p.observacao or '-' }}</td>
+                    <td><span class="badge-soft badge-soft-warning">Aguardando pagamento</span></td>
+                </tr>
+                {% else %}<tr><td colspan="6" class="text-center">Nenhum cliente pendente hoje</td></tr>
                 {% endfor %}
             </tbody>
         </table>

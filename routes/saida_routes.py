@@ -30,6 +30,16 @@ def _finalizar_entrega(conn, os_row, forma_pagamento):
             VALUES (%s, %s, %s, %s, %s, %s, %s)
         ''', (hoje, 'entrada', f'Pagamento OS {os_row["numero_os"]} - {os_row["cliente_nome"]}',
               'Serviço', os_row['valor_total'], forma_pagamento, os_row['id']))
+
+    # Registra o cliente no banco de clientes permanente assim que ele paga
+    # pela primeira vez (evita duplicar se ele já estiver lá).
+    cur.execute(
+        "INSERT INTO banco_clientes (nome, telefone) "
+        "SELECT %s, %s WHERE NOT EXISTS ("
+        "  SELECT 1 FROM banco_clientes WHERE nome = %s AND telefone IS NOT DISTINCT FROM %s"
+        ")",
+        (os_row['cliente_nome'], os_row['telefone'], os_row['cliente_nome'], os_row['telefone']),
+    )
     conn.commit()
     cur.close()
 
