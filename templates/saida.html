@@ -22,7 +22,7 @@
 <div class="card p-0">
     <div class="table-responsive">
         <table class="table table-hover mb-0">
-            <thead><tr><th>Código</th><th>Cliente</th><th>Telefone</th><th>Serviço</th><th>Valor</th><th>Pagamento</th><th>Entregar sem código</th></tr></thead>
+            <thead><tr><th>Código</th><th>Cliente</th><th>Telefone</th><th>Serviço</th><th>Valor</th><th>Pagamento</th><th>Entregar sem código</th><th>Ações</th></tr></thead>
             <tbody>
                 {% for os in prontos %}
                 <tr>
@@ -55,8 +55,9 @@
                         </form>
                         {% endif %}
                     </td>
+                    <td><a href="{{ url_for('clientes.excluir_pedido', id=os.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Excluir o pedido de {{ os.cliente_nome }}?')"><i class="fas fa-trash"></i></a></td>
                 </tr>
-                {% else %}<tr><td colspan="7" class="text-center">Nenhum alicate pronto para entrega</td></tr>{% endfor %}
+                {% else %}<tr><td colspan="8" class="text-center">Nenhum alicate pronto para entrega</td></tr>{% endfor %}
             </tbody>
         </table>
     </div>

@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 
 from db import get_db, formatar_data_br
 from auth import login_required
@@ -26,6 +26,23 @@ def clientes():
     cur.close()
     conn.close()
     return render_template('clientes.html', pedidos=pedidos_hoje, formatar_data=formatar_data_br, datetime=datetime)
+
+
+@bp.route('/clientes/excluir/<int:id>')
+@login_required
+def excluir_pedido(id):
+    """Exclui um pedido ainda não pago (limpeza manual, ex: cadastro errado).
+    Se o cliente já tinha pago antecipado na Entrada, remove também o
+    lançamento correspondente no caixa para não deixar valor "fantasma"."""
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM movimentacoes_caixa WHERE referencia_os_id = %s", (id,))
+    cur.execute("DELETE FROM ordens_servico WHERE id = %s AND status != 'Pago'", (id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+    flash('Pedido excluído!', 'success')
+    return redirect(request.referrer or url_for('clientes.clientes'))
 
 
 @bp.route('/clientes/banco')
