@@ -29,7 +29,7 @@
                     <td><strong>#{{ os.codigo_seguranca }}</strong></td>
                     <td>{{ os.cliente_nome }}</td>
                     <td>{{ os.telefone or '-' }}</td>
-                    <td>{{ os.codigo_servico }} x{{ os.quantidade }}</td>
+                    <td>{{ os.codigo_servico }}{{ os.quantidade }}</td>
                     <td>{{ formatar_moeda(os.valor_total) }}</td>
                     <td>
                         {% if os.forma_pagamento %}

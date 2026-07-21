@@ -14,7 +14,7 @@
                     <td><strong>{{ p.cliente_nome }}</strong></td>
                     <td>{{ p.telefone or '-' }}</td>
                     <td><span class="badge-soft badge-soft-neutral">#{{ p.codigo_seguranca }}</span></td>
-                    <td>{{ p.codigo_servico }} x{{ p.quantidade }}</td>
+                    <td>{{ p.codigo_servico }}{{ p.quantidade }}</td>
                     <td>{{ p.observacao or '-' }}</td>
                     <td><span class="badge-soft badge-soft-warning">Aguardando pagamento</span></td>
                     <td><a href="{{ url_for('clientes.excluir_pedido', id=p.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Excluir o pedido de {{ p.cliente_nome }}?')"><i class="fas fa-trash"></i></a></td>

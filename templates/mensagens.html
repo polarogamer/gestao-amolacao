@@ -14,7 +14,7 @@
                     <td><strong>{{ os.cliente_nome }}</strong></td>
                     <td>{{ os.telefone or '-' }}</td>
                     <td><span class="badge-soft badge-soft-success">#{{ os.codigo_seguranca }}</span></td>
-                    <td>{{ os.codigo_servico }} x{{ os.quantidade }}</td>
+                    <td>{{ os.codigo_servico }}{{ os.quantidade }}</td>
                     <td>{{ formatar_moeda(os.valor_total) }}</td>
                     <td>
                         {% if os.telefone %}
