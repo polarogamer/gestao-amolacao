@@ -10,8 +10,8 @@
         <a href="{{ url_for('entrada.entrada') }}" class="stat-card">
             <div class="stat-card__icon"><i class="fas fa-inbox"></i></div>
             <div>
-                <div class="stat-card__value">{{ entradas_hoje }}</div>
-                <div class="stat-card__label">Entradas hoje</div>
+                <div class="stat-card__value" id="metricEntradas">0</div>
+                <div class="stat-card__label" id="labelEntradas">Alicates recebidos hoje</div>
             </div>
         </a>
     </div>
@@ -19,8 +19,8 @@
         <a href="{{ url_for('saida.saida') }}" class="stat-card stat-card--success">
             <div class="stat-card__icon"><i class="fas fa-outdent"></i></div>
             <div>
-                <div class="stat-card__value">{{ saidas_hoje }}</div>
-                <div class="stat-card__label">Saídas hoje</div>
+                <div class="stat-card__value" id="metricSaidas">0</div>
+                <div class="stat-card__label" id="labelSaidas">Alicates retirados hoje</div>
             </div>
         </a>
     </div>
@@ -28,8 +28,8 @@
         <a href="{{ url_for('relatorio.relatorio') }}" class="stat-card stat-card--warning">
             <div class="stat-card__icon"><i class="fas fa-hourglass-half"></i></div>
             <div>
-                <div class="stat-card__value">{{ pendentes }}</div>
-                <div class="stat-card__label">Pendentes de retirada</div>
+                <div class="stat-card__value" id="metricPendentes">0</div>
+                <div class="stat-card__label" id="labelPendentes">Pendentes de retirada</div>
             </div>
         </a>
     </div>
@@ -37,8 +37,8 @@
         <a href="{{ url_for('caixa.caixa') }}" class="stat-card stat-card--info">
             <div class="stat-card__icon"><i class="fas fa-coins"></i></div>
             <div>
-                <div class="stat-card__value">{{ faturamento_hoje }}</div>
-                <div class="stat-card__label">Faturamento hoje</div>
+                <div class="stat-card__value" id="metricFaturamento">R$ 0,00</div>
+                <div class="stat-card__label" id="labelFaturamento">Faturamento recebido hoje</div>
             </div>
         </a>
     </div>
@@ -90,6 +90,7 @@
 const dadosDia = {{ grafico_dia | safe }};
 const dadosSemana = {{ grafico_semana | safe }};
 const dadosMes = {{ grafico_mes | safe }};
+const resumos = {{ resumos | safe }};
 
 Chart.defaults.font.family = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
 Chart.defaults.color = '#6B7280';
@@ -104,6 +105,10 @@ function configGrafico(data, comFaturamento) {
         x: { grid: { display: false } },
     };
     if (comFaturamento) {
+        datasets.push({
+            type: 'bar', label: 'Pendentes', data: data.pendentes,
+            backgroundColor: '#F2B84B', borderRadius: 4, maxBarThickness: 34, yAxisID: 'y',
+        });
         datasets.push({
             type: 'line', label: 'Faturamento (R$)', data: data.faturamento,
             borderColor: '#B4740E', backgroundColor: '#B4740E', pointBackgroundColor: '#B4740E',
@@ -135,8 +140,31 @@ function criarGrafico(canvasId, data, comFaturamento) {
     graficosCriados[canvasId] = new Chart(ctx, configGrafico(data, comFaturamento));
 }
 
+function moeda(valor) {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor || 0);
+}
+function atualizarResumo(periodo) {
+    const dados = resumos[periodo];
+    const textoPeriodo = periodo === 'dia' ? 'hoje' : periodo === 'semana' ? 'esta semana' : 'este mês';
+    document.getElementById('metricEntradas').textContent = dados.entradas;
+    document.getElementById('metricSaidas').textContent = dados.saidas;
+    document.getElementById('metricPendentes').textContent = dados.pendentes;
+    document.getElementById('metricFaturamento').textContent = moeda(dados.faturamento);
+    document.getElementById('labelEntradas').textContent = `Alicates recebidos ${textoPeriodo}`;
+    document.getElementById('labelSaidas').textContent = `Alicates retirados ${textoPeriodo}`;
+    document.getElementById('labelFaturamento').textContent = `Faturamento recebido ${textoPeriodo}`;
+}
+
 criarGrafico('chartDia', dadosDia, false);
-document.getElementById('tab-semana-btn').addEventListener('shown.bs.tab', () => criarGrafico('chartSemana', dadosSemana, true));
-document.getElementById('tab-mes-btn').addEventListener('shown.bs.tab', () => criarGrafico('chartMes', dadosMes, true));
+atualizarResumo('dia');
+document.getElementById('tab-dia-btn').addEventListener('shown.bs.tab', () => atualizarResumo('dia'));
+document.getElementById('tab-semana-btn').addEventListener('shown.bs.tab', () => {
+    atualizarResumo('semana');
+    criarGrafico('chartSemana', dadosSemana, true);
+});
+document.getElementById('tab-mes-btn').addEventListener('shown.bs.tab', () => {
+    atualizarResumo('mes');
+    criarGrafico('chartMes', dadosMes, true);
+});
 </script>
 {% endblock %}

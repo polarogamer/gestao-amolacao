@@ -48,7 +48,9 @@ def _dados_por_dia(conn, data_inicio, data_fim):
     dados = {}
     d = data_inicio
     while d <= data_fim:
-        dados[d.strftime('%Y-%m-%d')] = {'entradas': 0, 'saidas': 0, 'faturamento': 0.0}
+        dados[d.strftime('%Y-%m-%d')] = {
+            'entradas': 0, 'saidas': 0, 'pendentes': 0, 'faturamento': 0.0,
+        }
         d += timedelta(days=1)
 
     cur.execute(
@@ -63,12 +65,13 @@ def _dados_por_dia(conn, data_inicio, data_fim):
             dados[key] = {
                 'entradas': row['total_entradas'] or 0,
                 'saidas': row['total_saidas'] or 0,
+                'pendentes': row['pendentes'] or 0,
                 'faturamento': float(row['faturamento_dia'] or 0),
             }
             fechados.add(key)
 
     cur.execute(
-        "SELECT data_entrada, COUNT(*) AS c FROM ordens_servico "
+        "SELECT data_entrada, COALESCE(SUM(quantidade), 0) AS c FROM ordens_servico "
         "WHERE data_entrada BETWEEN %s AND %s GROUP BY data_entrada",
         (data_inicio, data_fim),
     )
@@ -78,7 +81,7 @@ def _dados_por_dia(conn, data_inicio, data_fim):
             dados[key]['entradas'] = row['c']
 
     cur.execute(
-        "SELECT data_entrega, COUNT(*) AS c FROM ordens_servico "
+        "SELECT data_entrega, COALESCE(SUM(quantidade), 0) AS c FROM ordens_servico "
         "WHERE data_entrega BETWEEN %s AND %s AND status = 'Pago' GROUP BY data_entrega",
         (data_inicio, data_fim),
     )
@@ -97,6 +100,16 @@ def _dados_por_dia(conn, data_inicio, data_fim):
         key = row['data'].strftime('%Y-%m-%d')
         if key in dados and key not in fechados:
             dados[key]['faturamento'] = float(row['s'] or 0)
+
+    cur.execute(
+        "SELECT data_entrada, COALESCE(SUM(quantidade), 0) AS c FROM ordens_servico "
+        "WHERE data_entrada BETWEEN %s AND %s AND status != 'Pago' GROUP BY data_entrada",
+        (data_inicio, data_fim),
+    )
+    for row in cur.fetchall():
+        key = row['data_entrada'].strftime('%Y-%m-%d')
+        if key in dados and key not in fechados:
+            dados[key]['pendentes'] = row['c']
 
     cur.close()
     return dados
@@ -178,6 +191,7 @@ def dashboard():
     semana_labels = []
     semana_entradas = []
     semana_saidas = []
+    semana_pendentes = []
     semana_faturamento = []
     d = inicio_semana
     while d <= fim_semana:
@@ -185,6 +199,7 @@ def dashboard():
         semana_labels.append(DIAS_SEMANA[d.weekday()])
         semana_entradas.append(dados_semana[key]['entradas'])
         semana_saidas.append(dados_semana[key]['saidas'])
+        semana_pendentes.append(dados_semana[key]['pendentes'])
         semana_faturamento.append(dados_semana[key]['faturamento'])
         d += timedelta(days=1)
 
@@ -194,6 +209,7 @@ def dashboard():
     mes_labels = []
     mes_entradas = []
     mes_saidas = []
+    mes_pendentes = []
     mes_faturamento = []
     d = inicio_mes
     while d <= hoje_data:
@@ -201,12 +217,38 @@ def dashboard():
         mes_labels.append(str(d.day))
         mes_entradas.append(dados_mes[key]['entradas'])
         mes_saidas.append(dados_mes[key]['saidas'])
+        mes_pendentes.append(dados_mes[key]['pendentes'])
         mes_faturamento.append(dados_mes[key]['faturamento'])
         d += timedelta(days=1)
+
+    def resumo_periodo(dados, inicio, fim):
+        """Totais dos cards. Pendências são peças do período ainda não retiradas."""
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT COALESCE(SUM(quantidade), 0) AS total FROM ordens_servico "
+            "WHERE status != 'Pago' AND data_entrada BETWEEN %s AND %s",
+            (inicio, fim),
+        )
+        pendentes_periodo = cur.fetchone()['total'] or 0
+        cur.close()
+        return {
+            'entradas': sum(item['entradas'] for item in dados.values()),
+            'saidas': sum(item['saidas'] for item in dados.values()),
+            'pendentes': pendentes_periodo,
+            'faturamento': float(sum(item['faturamento'] for item in dados.values())),
+        }
+
+    dados_hoje = _dados_por_dia(conn, hoje_data, hoje_data)
+    resumos = {
+        'dia': resumo_periodo(dados_hoje, hoje_data, hoje_data),
+        'semana': resumo_periodo(dados_semana, inicio_semana, fim_semana),
+        'mes': resumo_periodo(dados_mes, inicio_mes, hoje_data),
+    }
 
     conn.close()
     return render_template(
         'dashboard.html',
+        resumos=json.dumps(resumos),
         entradas_hoje=entradas_hoje,
         saidas_hoje=saidas_hoje,
         pendentes=pendentes,
@@ -218,10 +260,12 @@ def dashboard():
         grafico_dia=json.dumps({'labels': horas_labels, 'entradas': horas_entradas, 'saidas': horas_saidas}),
         grafico_semana=json.dumps({
             'labels': semana_labels, 'entradas': semana_entradas,
-            'saidas': semana_saidas, 'faturamento': semana_faturamento,
+            'saidas': semana_saidas, 'pendentes': semana_pendentes,
+            'faturamento': semana_faturamento,
         }),
         grafico_mes=json.dumps({
             'labels': mes_labels, 'entradas': mes_entradas,
-            'saidas': mes_saidas, 'faturamento': mes_faturamento,
+            'saidas': mes_saidas, 'pendentes': mes_pendentes,
+            'faturamento': mes_faturamento,
         }),
     )
