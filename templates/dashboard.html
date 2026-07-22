@@ -1,170 +1,156 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="page-header">
-    <h1><i class="fas fa-gauge-high"></i>Dashboard</h1>
-    <span class="badge-soft badge-soft-neutral">{{ datetime.now().strftime('%d/%m/%Y') }} · meta do dia: {{ qtd_hoje }}/{{ meta_diaria }}</span>
-</div>
+<div class="dashboard-page">
+    <div class="page-header dashboard-header">
+        <div>
+            <span class="dashboard-kicker">VISÃO OPERACIONAL</span>
+            <h1><i class="fas fa-gauge-high"></i>Dashboard</h1>
+            <p>Acompanhe os alicates, as retiradas e o caixa sem perder tempo.</p>
+        </div>
+        <span class="badge-soft badge-soft-neutral">{{ datetime.now().strftime('%d/%m/%Y') }} · meta do dia: {{ qtd_hoje }}/{{ meta_diaria }}</span>
+    </div>
 
-<div class="row g-3">
-    <div class="col-md-3 col-6">
-        <a href="{{ url_for('entrada.entrada') }}" class="stat-card">
+    <section class="dashboard-stats" aria-live="polite">
+        <a href="{{ url_for('entrada.entrada') }}" class="stat-card dashboard-stat">
             <div class="stat-card__icon"><i class="fas fa-inbox"></i></div>
-            <div>
-                <div class="stat-card__value" id="metricEntradas">0</div>
-                <div class="stat-card__label" id="labelEntradas">Alicates recebidos hoje</div>
-            </div>
+            <div><div class="stat-card__label" id="labelEntradas">Alicates recebidos hoje</div><div class="stat-card__value" id="metricEntradas">0</div></div>
         </a>
-    </div>
-    <div class="col-md-3 col-6">
-        <a href="{{ url_for('saida.saida') }}" class="stat-card stat-card--success">
-            <div class="stat-card__icon"><i class="fas fa-outdent"></i></div>
-            <div>
-                <div class="stat-card__value" id="metricSaidas">0</div>
-                <div class="stat-card__label" id="labelSaidas">Alicates retirados hoje</div>
-            </div>
+        <a href="{{ url_for('saida.saida') }}" class="stat-card stat-card--success dashboard-stat">
+            <div class="stat-card__icon"><i class="fas fa-arrow-right-arrow-left"></i></div>
+            <div><div class="stat-card__label" id="labelSaidas">Alicates retirados hoje</div><div class="stat-card__value" id="metricSaidas">0</div></div>
         </a>
-    </div>
-    <div class="col-md-3 col-6">
-        <a href="{{ url_for('relatorio.relatorio') }}" class="stat-card stat-card--warning">
+        <a href="{{ url_for('relatorio.relatorio') }}" class="stat-card stat-card--warning dashboard-stat">
             <div class="stat-card__icon"><i class="fas fa-hourglass-half"></i></div>
-            <div>
-                <div class="stat-card__value" id="metricPendentes">0</div>
-                <div class="stat-card__label" id="labelPendentes">Pendentes de retirada</div>
-            </div>
+            <div><div class="stat-card__label">Pendentes de retirada</div><div class="stat-card__value" id="metricPendentes">0</div></div>
         </a>
-    </div>
-    <div class="col-md-3 col-6">
-        <a href="{{ url_for('caixa.caixa') }}" class="stat-card stat-card--info">
+        <a href="{{ url_for('caixa.caixa') }}" class="stat-card stat-card--info dashboard-stat">
             <div class="stat-card__icon"><i class="fas fa-coins"></i></div>
-            <div>
-                <div class="stat-card__value" id="metricFaturamento">R$ 0,00</div>
-                <div class="stat-card__label" id="labelFaturamento">Faturamento recebido hoje</div>
-            </div>
+            <div><div class="stat-card__label" id="labelFaturamento">Faturamento recebido hoje</div><div class="stat-card__value" id="metricFaturamento">R$ 0,00</div></div>
         </a>
-    </div>
-</div>
+    </section>
 
-<div class="section-title">Desempenho</div>
-<div class="card p-3">
-    <ul class="nav nav-tabs" id="dashTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="tab-dia-btn" data-bs-toggle="tab" data-bs-target="#tab-dia" type="button" role="tab">Dia</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab-semana-btn" data-bs-toggle="tab" data-bs-target="#tab-semana" type="button" role="tab">Semana</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab-mes-btn" data-bs-toggle="tab" data-bs-target="#tab-mes" type="button" role="tab">Mês</button>
-        </li>
-    </ul>
-    <div class="tab-content pt-3">
-        <div class="tab-pane fade show active" id="tab-dia" role="tabpanel">
-            <p class="text-muted small mb-2">Entradas e saídas de hoje, por horário.</p>
-            <div style="height:320px"><canvas id="chartDia"></canvas></div>
+    <section class="card dashboard-panel">
+        <div class="dashboard-panel__header">
+            <div>
+                <span class="dashboard-kicker">MOVIMENTAÇÃO</span>
+                <h2 id="periodoTitulo">Hoje</h2>
+                <p id="periodoDescricao">Entradas e retiradas por horário.</p>
+            </div>
+            <div class="dashboard-periods" role="tablist" aria-label="Escolha o período">
+                <button class="dashboard-period active" id="tab-dia-btn" data-bs-toggle="tab" data-bs-target="#tab-dia" type="button" role="tab">Dia</button>
+                <button class="dashboard-period" id="tab-semana-btn" data-bs-toggle="tab" data-bs-target="#tab-semana" type="button" role="tab">Semana</button>
+                <button class="dashboard-period" id="tab-mes-btn" data-bs-toggle="tab" data-bs-target="#tab-mes" type="button" role="tab">Mês</button>
+            </div>
         </div>
-        <div class="tab-pane fade" id="tab-semana" role="tabpanel">
-            <p class="text-muted small mb-2">Entradas, saídas e faturamento desta semana (segunda a domingo).</p>
-            <div style="height:320px"><canvas id="chartSemana"></canvas></div>
-        </div>
-        <div class="tab-pane fade" id="tab-mes" role="tabpanel">
-            <p class="text-muted small mb-2">Entradas, saídas e faturamento deste mês, dia a dia.</p>
-            <div style="height:320px"><canvas id="chartMes"></canvas></div>
-        </div>
-    </div>
-</div>
 
-<div class="section-title">Acesso rápido</div>
-<div class="quick-links">
-    <a href="{{ url_for('relatorio.relatorio') }}" class="quick-link"><i class="fas fa-file-alt"></i>Relatório</a>
-    <a href="{{ url_for('clientes.clientes') }}" class="quick-link"><i class="fas fa-users"></i>Clientes</a>
-    <a href="{{ url_for('caixa.caixa') }}" class="quick-link"><i class="fas fa-coins"></i>Caixa</a>
-    <a href="{{ url_for('mensagens.mensagens') }}" class="quick-link"><i class="fab fa-whatsapp"></i>Mensagens</a>
-    <a href="{{ url_for('estoque.estoque') }}" class="quick-link"><i class="fas fa-box"></i>Estoque</a>
-    <a href="{{ url_for('consumiveis.consumiveis') }}" class="quick-link"><i class="fas fa-microchip"></i>Consumíveis</a>
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="tab-dia" role="tabpanel">
+                <div class="dashboard-graphs">
+                    <div class="graph-block"><div class="graph-block__title"><span>Fluxo de alicates</span><small>Recebidos x retirados</small></div><div class="graph-canvas"><canvas id="chartDia"></canvas></div></div>
+                    <div class="graph-insight"><i class="fas fa-lightbulb"></i><div><strong>Leitura rápida</strong><span id="insightDia">Os dados de hoje aparecem conforme os atendimentos são registrados.</span></div></div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="tab-semana" role="tabpanel">
+                <div class="dashboard-graphs dashboard-graphs--two">
+                    <div class="graph-block"><div class="graph-block__title"><span>Fluxo da semana</span><small>Peças por dia</small></div><div class="graph-canvas"><canvas id="chartSemana"></canvas></div></div>
+                    <div class="graph-block"><div class="graph-block__title"><span>Faturamento da semana</span><small>Valores recebidos por dia</small></div><div class="graph-canvas"><canvas id="chartFaturamentoSemana"></canvas></div></div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="tab-mes" role="tabpanel">
+                <div class="dashboard-graphs dashboard-graphs--two">
+                    <div class="graph-block"><div class="graph-block__title"><span>Fluxo do mês</span><small>Peças por dia</small></div><div class="graph-canvas"><canvas id="chartMes"></canvas></div></div>
+                    <div class="graph-block"><div class="graph-block__title"><span>Faturamento do mês</span><small>Valores recebidos por dia</small></div><div class="graph-canvas"><canvas id="chartFaturamentoMes"></canvas></div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-title">Acesso rápido</div>
+    <div class="quick-links">
+        <a href="{{ url_for('entrada.entrada') }}" class="quick-link"><i class="fas fa-inbox"></i>Nova entrada</a>
+        <a href="{{ url_for('saida.saida') }}" class="quick-link"><i class="fas fa-arrow-right-from-bracket"></i>Registrar saída</a>
+        <a href="{{ url_for('relatorio.relatorio') }}" class="quick-link"><i class="fas fa-file-alt"></i>Relatório</a>
+        <a href="{{ url_for('caixa.caixa') }}" class="quick-link"><i class="fas fa-coins"></i>Caixa</a>
+        <a href="{{ url_for('clientes.clientes') }}" class="quick-link"><i class="fas fa-users"></i>Clientes</a>
+        <a href="{{ url_for('estoque.estoque') }}" class="quick-link"><i class="fas fa-box"></i>Estoque</a>
+    </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.js"></script>
 <script>
+const resumos = {{ resumos | safe }};
 const dadosDia = {{ grafico_dia | safe }};
 const dadosSemana = {{ grafico_semana | safe }};
 const dadosMes = {{ grafico_mes | safe }};
-const resumos = {{ resumos | safe }};
+const charts = {};
 
 Chart.defaults.font.family = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
-Chart.defaults.color = '#6B7280';
-
-function configGrafico(data, comFaturamento) {
-    const datasets = [
-        { type: 'bar', label: 'Entradas', data: data.entradas, backgroundColor: '#0F4C81', borderRadius: 4, maxBarThickness: 34, yAxisID: 'y' },
-        { type: 'bar', label: 'Saídas', data: data.saidas, backgroundColor: '#0E8F5B', borderRadius: 4, maxBarThickness: 34, yAxisID: 'y' },
-    ];
-    const scales = {
-        y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#EEF0F3' }, title: { display: true, text: 'Peças' } },
-        x: { grid: { display: false } },
-    };
-    if (comFaturamento) {
-        datasets.push({
-            type: 'bar', label: 'Pendentes', data: data.pendentes,
-            backgroundColor: '#F2B84B', borderRadius: 4, maxBarThickness: 34, yAxisID: 'y',
-        });
-        datasets.push({
-            type: 'line', label: 'Faturamento (R$)', data: data.faturamento,
-            borderColor: '#B4740E', backgroundColor: '#B4740E', pointBackgroundColor: '#B4740E',
-            tension: 0.3, yAxisID: 'y1',
-        });
-        scales.y1 = {
-            beginAtZero: true, position: 'right',
-            grid: { drawOnChartArea: false },
-            ticks: { callback: (v) => 'R$ ' + v },
-            title: { display: true, text: 'Faturamento' },
-        };
+Chart.defaults.color = '#64748B';
+Chart.register({
+    id: 'emptyState',
+    afterDraw(chart, args, options) {
+        if (!options || !chart.chartArea) return;
+        const { ctx, chartArea } = chart;
+        ctx.save();
+        ctx.fillStyle = '#64748B';
+        ctx.textAlign = 'center';
+        ctx.font = '600 14px Segoe UI';
+        ctx.fillText('Nenhuma movimentação registrada neste período', (chartArea.left + chartArea.right) / 2, (chartArea.top + chartArea.bottom) / 2 - 8);
+        ctx.font = '12px Segoe UI';
+        ctx.fillStyle = '#94A3B8';
+        ctx.fillText('Os dados aparecerão automaticamente quando houver atendimento.', (chartArea.left + chartArea.right) / 2, (chartArea.top + chartArea.bottom) / 2 + 16);
+        ctx.restore();
     }
+});
+
+function moeda(valor) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor || 0); }
+function possuiMovimento(data) { return [...data.entradas, ...data.saidas].some((valor) => valor > 0); }
+function configurarMovimentos(data) {
     return {
-        data: { labels: data.labels, datasets },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
-            plugins: { legend: { position: 'bottom' } },
-            scales,
-        },
+        type: 'bar',
+        data: { labels: data.labels, datasets: [
+            { label: 'Recebidos', data: data.entradas, backgroundColor: '#2563EB', borderRadius: 7, borderSkipped: false, maxBarThickness: 28 },
+            { label: 'Retirados', data: data.saidas, backgroundColor: '#16A34A', borderRadius: 7, borderSkipped: false, maxBarThickness: 28 },
+            ...(data.pendentes ? [{ label: 'Pendentes', data: data.pendentes, backgroundColor: '#F59E0B', borderRadius: 7, borderSkipped: false, maxBarThickness: 28 }] : []),
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { emptyState: !possuiMovimento(data), legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, padding: 18 } }, tooltip: { padding: 11, callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y} peça(s)` } } }, scales: { y: { beginAtZero: true, ticks: { precision: 0, stepSize: 1 }, grid: { color: '#EEF2F7' }, border: { display: false } }, x: { grid: { display: false }, border: { display: false } } } }
     };
 }
-
-const graficosCriados = {};
-function criarGrafico(canvasId, data, comFaturamento) {
-    if (graficosCriados[canvasId]) return;
-    const ctx = document.getElementById(canvasId);
-    graficosCriados[canvasId] = new Chart(ctx, configGrafico(data, comFaturamento));
+function configurarFaturamento(data) {
+    return {
+        type: 'line',
+        data: { labels: data.labels, datasets: [{ label: 'Faturamento', data: data.faturamento, borderColor: '#D97706', backgroundColor: 'rgba(245, 158, 11, .12)', fill: true, tension: .38, borderWidth: 3, pointRadius: 3, pointHoverRadius: 5, pointBackgroundColor: '#FFFFFF', pointBorderColor: '#D97706', pointBorderWidth: 2 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { padding: 11, callbacks: { label: (ctx) => moeda(ctx.parsed.y) } } }, scales: { y: { beginAtZero: true, grid: { color: '#FEF3C7' }, border: { display: false }, ticks: { callback: (v) => 'R$ ' + v } }, x: { grid: { display: false }, border: { display: false } } } }
+    };
 }
-
-function moeda(valor) {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor || 0);
+function criarChart(id, configuracao) {
+    if (charts[id]) return;
+    charts[id] = new Chart(document.getElementById(id), configuracao);
 }
 function atualizarResumo(periodo) {
     const dados = resumos[periodo];
-    const textoPeriodo = periodo === 'dia' ? 'hoje' : periodo === 'semana' ? 'esta semana' : 'este mês';
+    const textos = { dia: ['Hoje', 'Entradas e retiradas por horário.', 'hoje'], semana: ['Esta semana', 'Acompanhe o movimento de segunda a domingo.', 'esta semana'], mes: ['Este mês', 'Acompanhe a evolução dia a dia.', 'este mês'] };
     document.getElementById('metricEntradas').textContent = dados.entradas;
     document.getElementById('metricSaidas').textContent = dados.saidas;
     document.getElementById('metricPendentes').textContent = dados.pendentes;
     document.getElementById('metricFaturamento').textContent = moeda(dados.faturamento);
-    document.getElementById('labelEntradas').textContent = `Alicates recebidos ${textoPeriodo}`;
-    document.getElementById('labelSaidas').textContent = `Alicates retirados ${textoPeriodo}`;
-    document.getElementById('labelFaturamento').textContent = `Faturamento recebido ${textoPeriodo}`;
+    document.getElementById('labelEntradas').textContent = `Alicates recebidos ${textos[periodo][2]}`;
+    document.getElementById('labelSaidas').textContent = `Alicates retirados ${textos[periodo][2]}`;
+    document.getElementById('labelFaturamento').textContent = `Faturamento recebido ${textos[periodo][2]}`;
+    document.getElementById('periodoTitulo').textContent = textos[periodo][0];
+    document.getElementById('periodoDescricao').textContent = textos[periodo][1];
+}
+function atualizarInsight() {
+    document.getElementById('insightDia').textContent = possuiMovimento(dadosDia) ? 'O gráfico mostra o ritmo de entradas e retiradas durante o dia.' : 'Ainda não há movimentações registradas por horário hoje.';
 }
 
-criarGrafico('chartDia', dadosDia, false);
 atualizarResumo('dia');
+atualizarInsight();
+criarChart('chartDia', configurarMovimentos(dadosDia));
 document.getElementById('tab-dia-btn').addEventListener('shown.bs.tab', () => atualizarResumo('dia'));
-document.getElementById('tab-semana-btn').addEventListener('shown.bs.tab', () => {
-    atualizarResumo('semana');
-    criarGrafico('chartSemana', dadosSemana, true);
-});
-document.getElementById('tab-mes-btn').addEventListener('shown.bs.tab', () => {
-    atualizarResumo('mes');
-    criarGrafico('chartMes', dadosMes, true);
-});
+document.getElementById('tab-semana-btn').addEventListener('shown.bs.tab', () => { atualizarResumo('semana'); criarChart('chartSemana', configurarMovimentos(dadosSemana)); criarChart('chartFaturamentoSemana', configurarFaturamento(dadosSemana)); });
+document.getElementById('tab-mes-btn').addEventListener('shown.bs.tab', () => { atualizarResumo('mes'); criarChart('chartMes', configurarMovimentos(dadosMes)); criarChart('chartFaturamentoMes', configurarFaturamento(dadosMes)); });
 </script>
 {% endblock %}
