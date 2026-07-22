@@ -54,7 +54,7 @@ def _dados_por_dia(conn, data_inicio, data_fim):
         d += timedelta(days=1)
 
     cur.execute(
-        "SELECT data, total_entradas, total_saidas, faturamento_dia FROM fechamentos_diarios "
+        "SELECT data, total_entradas, total_saidas, faturamento_dia, pendentes FROM fechamentos_diarios "
         "WHERE data BETWEEN %s AND %s",
         (data_inicio, data_fim),
     )
