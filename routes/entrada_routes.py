@@ -106,10 +106,10 @@ def entrada():
 
         if pagou_agora:
             cur.execute('''
-                INSERT INTO movimentacoes_caixa (data, tipo, descricao, categoria, valor, forma_pagamento, referencia_os_id)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO movimentacoes_caixa (data, tipo, descricao, categoria, valor, forma_pagamento, referencia_os_id, hora)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             ''', (hoje, 'entrada', f'Pagamento antecipado OS {numero_os} - {nome}',
-                  'Serviço', valor_total, forma_pagamento, os_id))
+                  'Serviço', valor_total, forma_pagamento, os_id, hora_entrada))
 
         conn.commit()
         cur.close()

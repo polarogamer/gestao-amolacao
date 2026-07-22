@@ -27,10 +27,10 @@ def _finalizar_entrega(conn, os_row, forma_pagamento):
             (hoje, hora_entrega, forma_pagamento, os_row['id']),
         )
         cur.execute('''
-            INSERT INTO movimentacoes_caixa (data, tipo, descricao, categoria, valor, forma_pagamento, referencia_os_id)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO movimentacoes_caixa (data, tipo, descricao, categoria, valor, forma_pagamento, referencia_os_id, hora)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         ''', (hoje, 'entrada', f'Pagamento OS {os_row["numero_os"]} - {os_row["cliente_nome"]}',
-              'Serviço', os_row['valor_total'], forma_pagamento, os_row['id']))
+              'Serviço', os_row['valor_total'], forma_pagamento, os_row['id'], hora_entrega))
 
     # Registra no banco de clientes permanente: um registro por retirada,
     # com o serviço/quantidade (ex: "AT" x2), observação e horário da retirada.

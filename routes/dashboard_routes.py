@@ -116,31 +116,56 @@ def _dados_por_dia(conn, data_inicio, data_fim):
 
 
 def _dados_hoje_por_hora(conn, hoje):
-    """Entradas/saídas de hoje agrupadas por hora (7h-19h), usando os
-    horários gravados na Entrada e na Saída."""
+    """Entradas/saídas/pendentes/faturamento de hoje agrupados por hora
+    (7h-19h), usando os horários gravados na Entrada, na Saída e no Caixa."""
     cur = conn.cursor()
-    cur.execute("SELECT hora_entrada FROM ordens_servico WHERE data_entrada = %s AND hora_entrada IS NOT NULL", (hoje,))
-    horas_entrada = [r['hora_entrada'] for r in cur.fetchall()]
+    cur.execute(
+        "SELECT hora_entrada, status FROM ordens_servico WHERE data_entrada = %s AND hora_entrada IS NOT NULL",
+        (hoje,),
+    )
+    entradas_rows = cur.fetchall()
     cur.execute(
         "SELECT hora_entrega FROM ordens_servico WHERE data_entrega = %s AND status = 'Pago' AND hora_entrega IS NOT NULL",
         (hoje,),
     )
     horas_saida = [r['hora_entrega'] for r in cur.fetchall()]
+    cur.execute(
+        "SELECT hora, COALESCE(SUM(valor), 0) AS s FROM movimentacoes_caixa "
+        "WHERE data = %s AND tipo = 'entrada' AND categoria != 'Abertura' AND hora IS NOT NULL "
+        "GROUP BY hora",
+        (hoje,),
+    )
+    faturamento_rows = cur.fetchall()
     cur.close()
 
     horas = [f"{h:02d}h" for h in range(7, 20)]
     entradas = {h: 0 for h in horas}
     saidas = {h: 0 for h in horas}
-    for h in horas_entrada:
-        bucket = f"{h[:2]}h"
+    pendentes = {h: 0 for h in horas}
+    faturamento = {h: 0.0 for h in horas}
+
+    for r in entradas_rows:
+        bucket = f"{r['hora_entrada'][:2]}h"
         if bucket in entradas:
             entradas[bucket] += 1
+            if r['status'] != 'Pago':
+                pendentes[bucket] += 1
     for h in horas_saida:
         bucket = f"{h[:2]}h"
         if bucket in saidas:
             saidas[bucket] += 1
+    for r in faturamento_rows:
+        bucket = f"{r['hora'][:2]}h"
+        if bucket in faturamento:
+            faturamento[bucket] += float(r['s'] or 0)
 
-    return horas, [entradas[h] for h in horas], [saidas[h] for h in horas]
+    return (
+        horas,
+        [entradas[h] for h in horas],
+        [saidas[h] for h in horas],
+        [pendentes[h] for h in horas],
+        [faturamento[h] for h in horas],
+    )
 
 
 @bp.route('/dashboard')
@@ -181,8 +206,8 @@ def dashboard():
     qtd_hoje = contar_entradas_hoje(conn)
     meta_diaria = int(get_config(conn, 'meta_diaria', '30'))
 
-    # --- Gráfico do dia: entradas x saídas por hora ---
-    horas_labels, horas_entradas, horas_saidas = _dados_hoje_por_hora(conn, hoje)
+    # --- Gráfico do dia: entradas x saídas x pendentes x faturamento por hora ---
+    horas_labels, horas_entradas, horas_saidas, horas_pendentes, horas_faturamento = _dados_hoje_por_hora(conn, hoje)
 
     # --- Gráfico da semana: segunda a domingo da semana atual ---
     inicio_semana = hoje_data - timedelta(days=hoje_data.weekday())
@@ -257,7 +282,10 @@ def dashboard():
         qtd_hoje=qtd_hoje,
         meta_diaria=meta_diaria,
         datetime=datetime_br,
-        grafico_dia=json.dumps({'labels': horas_labels, 'entradas': horas_entradas, 'saidas': horas_saidas}),
+        grafico_dia=json.dumps({
+            'labels': horas_labels, 'entradas': horas_entradas, 'saidas': horas_saidas,
+            'pendentes': horas_pendentes, 'faturamento': horas_faturamento,
+        }),
         grafico_semana=json.dumps({
             'labels': semana_labels, 'entradas': semana_entradas,
             'saidas': semana_saidas, 'pendentes': semana_pendentes,

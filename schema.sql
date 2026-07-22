@@ -59,8 +59,10 @@ CREATE TABLE IF NOT EXISTS movimentacoes_caixa (
     categoria TEXT,
     valor NUMERIC(10,2),
     forma_pagamento TEXT,
-    referencia_os_id INTEGER
+    referencia_os_id INTEGER,
+    hora TEXT
 );
+ALTER TABLE movimentacoes_caixa ADD COLUMN IF NOT EXISTS hora TEXT;
 
 CREATE TABLE IF NOT EXISTS consumiveis (
     id SERIAL PRIMARY KEY,

@@ -45,10 +45,11 @@
 
         <div class="tab-content">
             <div class="tab-pane fade show active" id="tab-dia" role="tabpanel">
-                <div class="dashboard-graphs">
-                    <div class="graph-block"><div class="graph-block__title"><span>Fluxo de alicates</span><small>Recebidos x retirados</small></div><div class="graph-canvas"><canvas id="chartDia"></canvas></div></div>
-                    <div class="graph-insight"><i class="fas fa-lightbulb"></i><div><strong>Leitura rápida</strong><span id="insightDia">Os dados de hoje aparecem conforme os atendimentos são registrados.</span></div></div>
+                <div class="dashboard-graphs dashboard-graphs--two">
+                    <div class="graph-block"><div class="graph-block__title"><span>Fluxo de alicates</span><small>Recebidos x retirados x pendentes</small></div><div class="graph-canvas"><canvas id="chartDia"></canvas></div></div>
+                    <div class="graph-block"><div class="graph-block__title"><span>Faturamento de hoje</span><small>Valores recebidos por horário</small></div><div class="graph-canvas"><canvas id="chartFaturamentoDia"></canvas></div></div>
                 </div>
+                <div class="graph-insight"><i class="fas fa-lightbulb"></i><div><strong>Leitura rápida</strong><span id="insightDia">Os dados de hoje aparecem conforme os atendimentos são registrados.</span></div></div>
             </div>
             <div class="tab-pane fade" id="tab-semana" role="tabpanel">
                 <div class="dashboard-graphs dashboard-graphs--two">
@@ -149,6 +150,7 @@ function atualizarInsight() {
 atualizarResumo('dia');
 atualizarInsight();
 criarChart('chartDia', configurarMovimentos(dadosDia));
+criarChart('chartFaturamentoDia', configurarFaturamento(dadosDia));
 document.getElementById('tab-dia-btn').addEventListener('shown.bs.tab', () => atualizarResumo('dia'));
 document.getElementById('tab-semana-btn').addEventListener('shown.bs.tab', () => { atualizarResumo('semana'); criarChart('chartSemana', configurarMovimentos(dadosSemana)); criarChart('chartFaturamentoSemana', configurarFaturamento(dadosSemana)); });
 document.getElementById('tab-mes-btn').addEventListener('shown.bs.tab', () => { atualizarResumo('mes'); criarChart('chartMes', configurarMovimentos(dadosMes)); criarChart('chartFaturamentoMes', configurarFaturamento(dadosMes)); });

@@ -35,15 +35,16 @@ def caixa_lancar():
         flash('Informe uma descrição e um valor válido!', 'error')
         return redirect(url_for('caixa.caixa'))
 
+    agora = agora_br()
     conn = get_db()
     cur = conn.cursor()
     cur.execute('''
-        INSERT INTO movimentacoes_caixa (data, tipo, descricao, categoria, valor, forma_pagamento)
-        VALUES (%s, %s, %s, %s, %s, %s)
+        INSERT INTO movimentacoes_caixa (data, tipo, descricao, categoria, valor, forma_pagamento, hora)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
     ''', (
-        agora_br().strftime('%Y-%m-%d'), tipo, descricao,
+        agora.strftime('%Y-%m-%d'), tipo, descricao,
         request.form.get('categoria', 'Outros'), valor,
-        request.form.get('forma_pagamento', 'Dinheiro'),
+        request.form.get('forma_pagamento', 'Dinheiro'), agora.strftime('%H:%M'),
     ))
     conn.commit()
     cur.close()

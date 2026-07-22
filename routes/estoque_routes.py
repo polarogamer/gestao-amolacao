@@ -117,7 +117,8 @@ def estoque_vender():
 
     valor_unitario = produto['preco_venda'] or 0
     valor_total = float(valor_unitario) * quantidade
-    hoje = agora_br().strftime('%Y-%m-%d')
+    agora = agora_br()
+    hoje = agora.strftime('%Y-%m-%d')
 
     cur.execute("UPDATE estoque_alicates SET quantidade = quantidade - %s WHERE id = %s", (quantidade, produto_id))
 
@@ -138,9 +139,9 @@ def estoque_vender():
 
     if status == 'pago':
         cur.execute('''
-            INSERT INTO movimentacoes_caixa (data, tipo, descricao, categoria, valor, forma_pagamento, referencia_os_id)
-            VALUES (%s, 'entrada', %s, 'Venda', %s, %s, %s)
-        ''', (hoje, f'Venda {produto["descricao"]} - {cliente_nome}', valor_total, forma_pagamento, venda_id))
+            INSERT INTO movimentacoes_caixa (data, tipo, descricao, categoria, valor, forma_pagamento, referencia_os_id, hora)
+            VALUES (%s, 'entrada', %s, 'Venda', %s, %s, %s, %s)
+        ''', (hoje, f'Venda {produto["descricao"]} - {cliente_nome}', valor_total, forma_pagamento, venda_id, agora.strftime('%H:%M')))
         flash(f'✅ Venda registrada! {formatar_moeda(valor_total)} ({forma_pagamento})', 'success')
     else:
         flash(f'📌 Encomenda separada no estoque para {cliente_nome}. Confirme o pagamento quando ela vier buscar.', 'success')
@@ -169,14 +170,15 @@ def estoque_confirmar_pagamento(id):
         conn.close()
         return redirect(url_for('estoque.estoque'))
 
-    hoje = agora_br().strftime('%Y-%m-%d')
+    agora = agora_br()
+    hoje = agora.strftime('%Y-%m-%d')
     cur.execute("UPDATE vendas_alicates SET status = 'pago', forma_pagamento = %s, data_pagamento = %s WHERE id = %s",
                 (forma_pagamento, hoje, id))
 
     cur.execute('''
-        INSERT INTO movimentacoes_caixa (data, tipo, descricao, categoria, valor, forma_pagamento, referencia_os_id)
-        VALUES (%s, 'entrada', %s, 'Venda', %s, %s, %s)
-    ''', (hoje, f'Venda {venda["produto_descricao"]} - {venda["cliente_nome"]}', venda['valor_total'], forma_pagamento, id))
+        INSERT INTO movimentacoes_caixa (data, tipo, descricao, categoria, valor, forma_pagamento, referencia_os_id, hora)
+        VALUES (%s, 'entrada', %s, 'Venda', %s, %s, %s, %s)
+    ''', (hoje, f'Venda {venda["produto_descricao"]} - {venda["cliente_nome"]}', venda['valor_total'], forma_pagamento, id, agora.strftime('%H:%M')))
 
     conn.commit()
     cur.close()

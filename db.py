@@ -94,9 +94,11 @@ def init_db():
             categoria TEXT,
             valor NUMERIC(10,2),
             forma_pagamento TEXT,
-            referencia_os_id INTEGER
+            referencia_os_id INTEGER,
+            hora TEXT
         )
     ''')
+    cur.execute("ALTER TABLE movimentacoes_caixa ADD COLUMN IF NOT EXISTS hora TEXT")
 
     cur.execute('''
         CREATE TABLE IF NOT EXISTS consumiveis (
