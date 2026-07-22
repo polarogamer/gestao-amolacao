@@ -18,7 +18,7 @@
                     <td>{{ formatar_moeda(os.valor_total) }}</td>
                     <td>
                         {% if os.telefone %}
-                        <a href="https://wa.me/55{{ os.telefone|replace('(', '')|replace(')', '')|replace(' ', '')|replace('-', '') }}?text=Ol%C3%A1%20{{ os.cliente_nome }}!%20Seu%20alicate%20j%C3%A1%20est%C3%A1%20PRONTO!%20C%C3%B3digo:%20{{ os.codigo_seguranca }}%20Valor:%20{{ formatar_moeda(os.valor_total) }}" target="_blank" class="btn btn-sm btn-success">
+                        <a href="https://wa.me/55{{ os.telefone|replace('(', '')|replace(')', '')|replace(' ', '')|replace('-', '') }}?text=Ol%C3%A1%20{{ os.cliente_nome|urlencode }}!%20Seu%20alicate%20j%C3%A1%20est%C3%A1%20PRONTO!%20C%C3%B3digo:%20{{ os.codigo_seguranca }}%20Valor:%20{{ formatar_moeda(os.valor_total)|urlencode }}" target="_blank" class="btn btn-sm btn-success">
                             <i class="fab fa-whatsapp"></i> Enviar
                         </a>
                         {% else %}

@@ -1,3 +1,4 @@
+import psycopg2
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 
 from db import get_db, formatar_moeda, formatar_data_br, parse_valor, parse_inteiro, agora_br
@@ -63,11 +64,16 @@ def estoque_adicionar():
 def estoque_excluir(id):
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("DELETE FROM estoque_alicates WHERE id = %s", (id,))
-    conn.commit()
-    cur.close()
-    conn.close()
-    flash('Produto excluído!', 'success')
+    try:
+        cur.execute("DELETE FROM estoque_alicates WHERE id = %s", (id,))
+        conn.commit()
+        flash('Produto excluído!', 'success')
+    except psycopg2.IntegrityError:
+        conn.rollback()
+        flash('Não é possível excluir: este produto já tem vendas registradas no histórico.', 'error')
+    finally:
+        cur.close()
+        conn.close()
     return redirect(url_for('estoque.estoque'))
 
 

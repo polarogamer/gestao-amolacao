@@ -94,6 +94,20 @@ def consumivel_usar(id):
 
     conn = get_db()
     cur = conn.cursor()
+    cur.execute("SELECT quantidade, nome FROM consumiveis WHERE id = %s", (id,))
+    item = cur.fetchone()
+    if not item:
+        flash('Insumo não encontrado!', 'error')
+        cur.close()
+        conn.close()
+        return redirect(url_for('consumiveis.consumiveis'))
+
+    if quantidade > item['quantidade']:
+        flash(f'Quantidade insuficiente! Só há {item["quantidade"]} de {item["nome"]} disponível.', 'error')
+        cur.close()
+        conn.close()
+        return redirect(url_for('consumiveis.consumiveis'))
+
     cur.execute("UPDATE consumiveis SET quantidade = quantidade - %s WHERE id = %s", (quantidade, id))
     conn.commit()
     cur.close()
