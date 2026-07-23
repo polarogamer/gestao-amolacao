@@ -108,6 +108,7 @@ Chart.register({
 
 function moeda(valor) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor || 0); }
 function possuiMovimento(data) { return [...data.entradas, ...data.saidas].some((valor) => valor > 0); }
+function possuiFaturamento(data) { return (data.faturamento || []).some((valor) => valor > 0); }
 function configurarMovimentos(data) {
     return {
         type: 'bar',
@@ -123,7 +124,7 @@ function configurarFaturamento(data) {
     return {
         type: 'line',
         data: { labels: data.labels, datasets: [{ label: 'Faturamento', data: data.faturamento, borderColor: '#D97706', backgroundColor: 'rgba(245, 158, 11, .12)', fill: true, tension: .38, borderWidth: 3, pointRadius: 3, pointHoverRadius: 5, pointBackgroundColor: '#FFFFFF', pointBorderColor: '#D97706', pointBorderWidth: 2 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { padding: 11, callbacks: { label: (ctx) => moeda(ctx.parsed.y) } } }, scales: { y: { beginAtZero: true, grid: { color: '#FEF3C7' }, border: { display: false }, ticks: { callback: (v) => 'R$ ' + v } }, x: { grid: { display: false }, border: { display: false } } } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { emptyState: !possuiFaturamento(data), legend: { display: false }, tooltip: { padding: 11, callbacks: { label: (ctx) => moeda(ctx.parsed.y) } } }, scales: { y: { beginAtZero: true, grid: { color: '#FEF3C7' }, border: { display: false }, ticks: { callback: (v) => 'R$ ' + v } }, x: { grid: { display: false }, border: { display: false } } } }
     };
 }
 function criarChart(id, configuracao) {
