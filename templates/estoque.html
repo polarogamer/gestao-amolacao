@@ -26,7 +26,7 @@
 <div class="card p-0 mb-4">
     <div class="table-responsive">
         <table class="table table-hover mb-0 align-middle">
-            <thead><tr><th>SKU</th><th>Descrição</th><th>Tipo</th><th>Marca</th><th>Qtd</th><th>Preço</th><th style="min-width:420px">Vender (paga na hora)</th><th></th></tr></thead>
+            <thead><tr><th>SKU</th><th>Descrição</th><th>Tipo</th><th>Marca</th><th>Qtd</th><th>Preço</th><th class="text-end">Ações</th></tr></thead>
             <tbody>
                 {% for p in produtos %}
                 <tr {% if p.quantidade <= p.estoque_minimo %}class="table-low-stock"{% endif %}>
@@ -36,26 +36,20 @@
                     <td>{{ p.marca or '-' }}</td>
                     <td><strong>{{ p.quantidade }}</strong>{% if p.quantidade <= p.estoque_minimo %} <span class="badge-soft badge-soft-warning">baixo</span>{% endif %}</td>
                     <td>{{ formatar_moeda(p.preco_venda) }}</td>
-                    <td>
+                    <td class="text-end text-nowrap">
                         {% if p.quantidade > 0 %}
-                        <form method="POST" action="{{ url_for('estoque.estoque_vender') }}" class="row g-1 venda-form" data-preco="{{ p.preco_venda or 0 }}">
-                            <input type="hidden" name="produto_id" value="{{ p.id }}">
-                            <div class="col-4"><input name="cliente_nome" class="form-control form-control-sm" placeholder="Nome *" required></div>
-                            <div class="col-3"><input name="telefone" class="form-control form-control-sm" placeholder="Telefone"></div>
-                            <div class="col-2"><input name="quantidade" type="number" class="form-control form-control-sm qtd-venda" value="1" min="1" max="{{ p.quantidade }}"></div>
-                            <div class="col-3"><select name="forma_pagamento" class="form-select form-select-sm" required><option value="">Pagamento *</option><option value="Pix">Pix</option><option value="Espécie">Espécie</option></select></div>
-                            <div class="col-12 d-flex align-items-center gap-2 mt-1">
-                                <span class="badge-soft badge-soft-info total-venda">{{ formatar_moeda(p.preco_venda) }}</span>
-                                <button class="btn btn-sm btn-success flex-grow-1"><i class="fas fa-cash-register me-1"></i>Registrar venda</button>
-                            </div>
-                        </form>
+                        <button type="button" class="btn btn-sm btn-success btn-vender"
+                                data-id="{{ p.id }}" data-nome="{{ p.descricao }}"
+                                data-preco="{{ p.preco_venda or 0 }}" data-max="{{ p.quantidade }}">
+                            <i class="fas fa-cash-register me-1"></i>Vender
+                        </button>
                         {% else %}
-                        <span class="badge-soft badge-soft-danger">Sem estoque</span>
+                        <span class="badge-soft badge-soft-neutral me-1">Sem estoque</span>
                         {% endif %}
+                        <a href="{{ url_for('estoque.estoque_excluir', id=p.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Excluir {{ p.descricao }}?')"><i class="fas fa-trash"></i></a>
                     </td>
-                    <td><a href="{{ url_for('estoque.estoque_excluir', id=p.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Excluir {{ p.descricao }}?')"><i class="fas fa-trash"></i></a></td>
                 </tr>
-                {% else %}<tr><td colspan="8" class="text-center">Nenhum produto no estoque ainda. Adicione um acima.</td></tr>{% endfor %}
+                {% else %}<tr><td colspan="7" class="text-center">Nenhum produto no estoque ainda. Adicione um acima.</td></tr>{% endfor %}
             </tbody>
         </table>
     </div>
@@ -115,15 +109,68 @@
     </div>
 </div>
 
+<!-- Janela de venda -->
+<div class="modal fade" id="modalVenda" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('estoque.estoque_vender') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-cash-register icon-primary me-2"></i>Registrar venda</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="produto_id" id="venda-produto-id">
+                    <div class="mb-3 p-3 rounded" style="background:var(--color-primary-soft)">
+                        <div class="fw-bold" id="venda-produto-nome" style="color:var(--color-primary)"></div>
+                        <div class="text-muted small" id="venda-produto-preco"></div>
+                    </div>
+                    <div class="mb-3"><label class="form-label">Nome do cliente *</label><input name="cliente_nome" class="form-control" placeholder="Ex: Juliana" required></div>
+                    <div class="mb-3"><label class="form-label">Telefone</label><input name="telefone" class="form-control" placeholder="(11) 99999-9999"></div>
+                    <div class="row g-2">
+                        <div class="col-6"><label class="form-label">Quantidade</label><input name="quantidade" id="venda-qtd" type="number" class="form-control" value="1" min="1"></div>
+                        <div class="col-6"><label class="form-label">Pagamento *</label><select name="forma_pagamento" class="form-select" required><option value="">Selecione</option><option value="Pix">Pix</option><option value="Espécie">Espécie</option></select></div>
+                    </div>
+                    <div class="mt-3 p-3 rounded d-flex justify-content-between align-items-center" style="background:var(--color-success-bg)">
+                        <span class="fw-bold" style="color:var(--color-success)">Total a pagar</span>
+                        <strong id="venda-total" style="color:var(--color-success);font-size:1.15rem"></strong>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-success"><i class="fas fa-check me-1"></i>Confirmar venda</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
 <script>
-// Mostra o total (preço × quantidade) ao vivo em cada linha de venda.
-function moedaBR(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); }
-document.querySelectorAll('.venda-form').forEach(function (form) {
-    var preco = parseFloat(form.dataset.preco) || 0;
-    var qtd = form.querySelector('.qtd-venda');
-    var total = form.querySelector('.total-venda');
-    function atualizar() { total.textContent = moedaBR(preco * (parseInt(qtd.value) || 0)); }
-    qtd.addEventListener('input', atualizar);
-});
+(function () {
+    function moedaBR(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); }
+    var modalEl = document.getElementById('modalVenda');
+    var modal = new bootstrap.Modal(modalEl);
+    var precoAtual = 0;
+    var qtdInput = document.getElementById('venda-qtd');
+    var totalEl = document.getElementById('venda-total');
+
+    function atualizarTotal() { totalEl.textContent = moedaBR(precoAtual * (parseInt(qtdInput.value) || 0)); }
+    qtdInput.addEventListener('input', atualizarTotal);
+
+    document.querySelectorAll('.btn-vender').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            precoAtual = parseFloat(btn.dataset.preco) || 0;
+            document.getElementById('venda-produto-id').value = btn.dataset.id;
+            document.getElementById('venda-produto-nome').textContent = btn.dataset.nome;
+            document.getElementById('venda-produto-preco').textContent = moedaBR(precoAtual) + ' por unidade';
+            qtdInput.value = 1;
+            qtdInput.max = btn.dataset.max;
+            atualizarTotal();
+            modal.show();
+        });
+    });
+})();
 </script>
 {% endblock %}
