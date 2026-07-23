@@ -120,15 +120,15 @@ def _dados_hoje_por_hora(conn, hoje):
     (7h-19h), usando os horários gravados na Entrada, na Saída e no Caixa."""
     cur = conn.cursor()
     cur.execute(
-        "SELECT hora_entrada, status FROM ordens_servico WHERE data_entrada = %s AND hora_entrada IS NOT NULL",
+        "SELECT hora_entrada, status, quantidade FROM ordens_servico WHERE data_entrada = %s AND hora_entrada IS NOT NULL",
         (hoje,),
     )
     entradas_rows = cur.fetchall()
     cur.execute(
-        "SELECT hora_entrega FROM ordens_servico WHERE data_entrega = %s AND status = 'Pago' AND hora_entrega IS NOT NULL",
+        "SELECT hora_entrega, quantidade FROM ordens_servico WHERE data_entrega = %s AND status = 'Pago' AND hora_entrega IS NOT NULL",
         (hoje,),
     )
-    horas_saida = [r['hora_entrega'] for r in cur.fetchall()]
+    saida_rows = cur.fetchall()
     cur.execute(
         "SELECT hora, COALESCE(SUM(valor), 0) AS s FROM movimentacoes_caixa "
         "WHERE data = %s AND tipo = 'entrada' AND categoria != 'Abertura' AND hora IS NOT NULL "
@@ -147,13 +147,13 @@ def _dados_hoje_por_hora(conn, hoje):
     for r in entradas_rows:
         bucket = f"{r['hora_entrada'][:2]}h"
         if bucket in entradas:
-            entradas[bucket] += 1
+            entradas[bucket] += r['quantidade'] or 0
             if r['status'] != 'Pago':
-                pendentes[bucket] += 1
-    for h in horas_saida:
-        bucket = f"{h[:2]}h"
+                pendentes[bucket] += r['quantidade'] or 0
+    for r in saida_rows:
+        bucket = f"{r['hora_entrega'][:2]}h"
         if bucket in saidas:
-            saidas[bucket] += 1
+            saidas[bucket] += r['quantidade'] or 0
     for r in faturamento_rows:
         bucket = f"{r['hora'][:2]}h"
         if bucket in faturamento:

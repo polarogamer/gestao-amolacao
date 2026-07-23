@@ -73,10 +73,10 @@ def relatorio_fechar():
         conn.close()
         return redirect(url_for('relatorio.relatorio'))
 
-    cur.execute("SELECT COUNT(*) AS c FROM ordens_servico WHERE data_entrada = %s", (hoje,))
+    cur.execute("SELECT COALESCE(SUM(quantidade), 0) AS c FROM ordens_servico WHERE data_entrada = %s", (hoje,))
     total_entradas = cur.fetchone()['c'] or 0
 
-    cur.execute("SELECT COUNT(*) AS c FROM ordens_servico WHERE data_entrega = %s AND status = 'Pago'", (hoje,))
+    cur.execute("SELECT COALESCE(SUM(quantidade), 0) AS c FROM ordens_servico WHERE data_entrega = %s AND status = 'Pago'", (hoje,))
     total_saidas = cur.fetchone()['c'] or 0
 
     cur.execute(
