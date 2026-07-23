@@ -45,9 +45,11 @@ def init_db():
             telefone TEXT,
             endereco TEXT,
             codigo_seguranca TEXT,
-            data_cadastro DATE DEFAULT CURRENT_DATE
+            data_cadastro DATE DEFAULT CURRENT_DATE,
+            is_seed BOOLEAN DEFAULT FALSE
         )
     ''')
+    cur.execute("ALTER TABLE clientes ADD COLUMN IF NOT EXISTS is_seed BOOLEAN DEFAULT FALSE")
 
     cur.execute('''
         CREATE TABLE IF NOT EXISTS ordens_servico (
@@ -67,11 +69,13 @@ def init_db():
             forma_pagamento TEXT,
             observacao TEXT,
             hora_entrada TEXT,
-            hora_entrega TEXT
+            hora_entrega TEXT,
+            is_seed BOOLEAN DEFAULT FALSE
         )
     ''')
     cur.execute("ALTER TABLE ordens_servico ADD COLUMN IF NOT EXISTS hora_entrada TEXT")
     cur.execute("ALTER TABLE ordens_servico ADD COLUMN IF NOT EXISTS hora_entrega TEXT")
+    cur.execute("ALTER TABLE ordens_servico ADD COLUMN IF NOT EXISTS is_seed BOOLEAN DEFAULT FALSE")
 
     cur.execute('''
         CREATE TABLE IF NOT EXISTS estoque_alicates (
@@ -81,9 +85,11 @@ def init_db():
             tipo TEXT,
             quantidade INTEGER DEFAULT 0,
             preco_venda NUMERIC(10,2),
-            estoque_minimo INTEGER DEFAULT 5
+            estoque_minimo INTEGER DEFAULT 5,
+            is_seed BOOLEAN DEFAULT FALSE
         )
     ''')
+    cur.execute("ALTER TABLE estoque_alicates ADD COLUMN IF NOT EXISTS is_seed BOOLEAN DEFAULT FALSE")
 
     cur.execute('''
         CREATE TABLE IF NOT EXISTS movimentacoes_caixa (
@@ -95,10 +101,12 @@ def init_db():
             valor NUMERIC(10,2),
             forma_pagamento TEXT,
             referencia_os_id INTEGER,
-            hora TEXT
+            hora TEXT,
+            is_seed BOOLEAN DEFAULT FALSE
         )
     ''')
     cur.execute("ALTER TABLE movimentacoes_caixa ADD COLUMN IF NOT EXISTS hora TEXT")
+    cur.execute("ALTER TABLE movimentacoes_caixa ADD COLUMN IF NOT EXISTS is_seed BOOLEAN DEFAULT FALSE")
 
     cur.execute('''
         CREATE TABLE IF NOT EXISTS consumiveis (
@@ -107,9 +115,11 @@ def init_db():
             quantidade INTEGER DEFAULT 0,
             unidade TEXT,
             estoque_minimo INTEGER DEFAULT 5,
-            preco_unitario NUMERIC(10,2)
+            preco_unitario NUMERIC(10,2),
+            is_seed BOOLEAN DEFAULT FALSE
         )
     ''')
+    cur.execute("ALTER TABLE consumiveis ADD COLUMN IF NOT EXISTS is_seed BOOLEAN DEFAULT FALSE")
 
     cur.execute('''
         CREATE TABLE IF NOT EXISTS configuracoes (
@@ -131,9 +141,11 @@ def init_db():
             forma_pagamento TEXT,
             status TEXT DEFAULT 'reservado',
             data_registro DATE,
-            data_pagamento DATE
+            data_pagamento DATE,
+            is_seed BOOLEAN DEFAULT FALSE
         )
     ''')
+    cur.execute("ALTER TABLE vendas_alicates ADD COLUMN IF NOT EXISTS is_seed BOOLEAN DEFAULT FALSE")
 
     cur.execute('''
         CREATE TABLE IF NOT EXISTS fechamentos_diarios (
@@ -165,6 +177,7 @@ def init_db():
     cur.execute("ALTER TABLE banco_clientes ADD COLUMN IF NOT EXISTS quantidade INTEGER DEFAULT 1")
     cur.execute("ALTER TABLE banco_clientes ADD COLUMN IF NOT EXISTS observacao TEXT")
     cur.execute("ALTER TABLE banco_clientes ADD COLUMN IF NOT EXISTS hora TEXT")
+    cur.execute("ALTER TABLE banco_clientes ADD COLUMN IF NOT EXISTS is_seed BOOLEAN DEFAULT FALSE")
 
     # Dados iniciais - consumíveis
     cur.execute("SELECT COUNT(*) AS c FROM consumiveis")

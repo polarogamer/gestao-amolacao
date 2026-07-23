@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-flask"></i>Ferramentas de Teste</h1>
+</div>
+
+<div class="info-bar">
+    <span><i class="fas fa-circle-info me-2"></i>Aqui você cria dados fictícios pra testar o sistema sem bagunçar seus dados reais. Tudo que for gerado é marcado como "teste" e some por completo quando você clicar em apagar.</span>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card p-4 h-100">
+            <div class="section-title mt-0"><i class="fas fa-wand-magic-sparkles icon-primary me-2"></i>Gerar dados fictícios</div>
+            <p class="text-muted mb-3" style="font-size:.88rem">
+                Cria 15 clientes com pedidos (pagos e pendentes), vendas de estoque, consumíveis
+                e lançamentos de caixa espalhados pelos últimos dias — o suficiente pra ver
+                Dashboard (Dia/Semana/Mês), Relatório, Clientes, Caixa e Estoque preenchidos.
+            </p>
+            {% if total_pedidos > 0 %}
+            <div class="badge-soft badge-soft-info mb-3" style="align-self:flex-start">
+                <i class="fas fa-database me-1"></i>{{ total_pedidos }} pedido(s) de teste no banco agora
+            </div>
+            {% endif %}
+            <form method="POST" action="{{ url_for('ferramentas.gerar_dados') }}" class="mt-auto">
+                <button class="btn btn-primary w-100"><i class="fas fa-plus me-1"></i>Gerar dados fictícios</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card p-4 h-100">
+            <div class="section-title mt-0"><i class="fas fa-trash-can icon-primary me-2"></i>Apagar dados fictícios</div>
+            <p class="text-muted mb-3" style="font-size:.88rem">
+                Remove <strong>somente</strong> os dados de teste gerados por aqui. Seus clientes,
+                pedidos, vendas e lançamentos reais <strong>não são tocados</strong>.
+            </p>
+            <form method="POST" action="{{ url_for('ferramentas.apagar_dados') }}" class="mt-auto"
+                  onsubmit="return confirm('Apagar todos os dados de teste? Os dados reais continuam intactos.')">
+                <button class="btn btn-outline-danger w-100"><i class="fas fa-trash me-1"></i>Apagar dados de teste</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

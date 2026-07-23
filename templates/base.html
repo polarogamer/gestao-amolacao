@@ -46,6 +46,9 @@
 
                     <div class="nav-section-title">Comunicação</div>
                     <a class="nav-link {% if request.endpoint == 'mensagens.mensagens' %}active{% endif %}" href="{{ url_for('mensagens.mensagens') }}"><i class="fab fa-whatsapp"></i>Mensagens</a>
+
+                    <div class="nav-section-title">Sistema</div>
+                    <a class="nav-link {% if request.endpoint == 'ferramentas.ferramentas' %}active{% endif %}" href="{{ url_for('ferramentas.ferramentas') }}"><i class="fas fa-flask"></i>Ferramentas</a>
                 </nav>
             </div>
             <div class="col-md-10 col-12 main-content p-4">

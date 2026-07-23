@@ -18,6 +18,7 @@ from routes import (
     estoque_routes,
     consumiveis_routes,
     mensagens_routes,
+    ferramentas_routes,
 )
 
 
@@ -42,6 +43,7 @@ def create_app():
     app.register_blueprint(estoque_routes.bp)
     app.register_blueprint(consumiveis_routes.bp)
     app.register_blueprint(mensagens_routes.bp)
+    app.register_blueprint(ferramentas_routes.bp)
 
     @app.cli.command('init-db')
     def init_db_command():
