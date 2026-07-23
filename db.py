@@ -217,6 +217,26 @@ def init_db():
     conn.close()
 
 
+# Tabelas que ganham a coluna is_seed (usada pelas Ferramentas de teste).
+_TABELAS_SEED = (
+    'clientes', 'ordens_servico', 'estoque_alicates', 'consumiveis',
+    'vendas_alicates', 'movimentacoes_caixa', 'banco_clientes',
+)
+
+
+def garantir_colunas_seed():
+    """Cria a coluna is_seed onde faltar. Como o Supabase não roda o init_db
+    automaticamente a cada deploy, as Ferramentas chamam isso antes de usar a
+    coluna - assim funciona sem precisar rodar SQL na mão. É idempotente."""
+    conn = get_db()
+    cur = conn.cursor()
+    for tabela in _TABELAS_SEED:
+        cur.execute(f"ALTER TABLE {tabela} ADD COLUMN IF NOT EXISTS is_seed BOOLEAN DEFAULT FALSE")
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
 # ==================== FUNÇÕES UTILITÁRIAS COMPARTILHADAS ====================
 
 def agora_br():

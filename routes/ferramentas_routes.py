@@ -7,7 +7,7 @@ import random
 from datetime import timedelta
 from flask import Blueprint, render_template, redirect, url_for, flash
 
-from db import get_db, agora_br
+from db import get_db, agora_br, garantir_colunas_seed
 from auth import login_required
 
 bp = Blueprint('ferramentas', __name__)
@@ -79,6 +79,7 @@ def _gerar_numero_os(cur, ano):
 @bp.route('/ferramentas')
 @login_required
 def ferramentas():
+    garantir_colunas_seed()
     conn = get_db()
     cur = conn.cursor()
     cur.execute("SELECT COUNT(*) AS c FROM ordens_servico WHERE is_seed = true")
@@ -93,6 +94,7 @@ def ferramentas():
 @bp.route('/ferramentas/gerar', methods=['POST'])
 @login_required
 def gerar_dados():
+    garantir_colunas_seed()
     conn = get_db()
     cur = conn.cursor()
     agora = agora_br()
@@ -214,6 +216,7 @@ def gerar_dados():
 @bp.route('/ferramentas/apagar', methods=['POST'])
 @login_required
 def apagar_dados():
+    garantir_colunas_seed()
     conn = get_db()
     cur = conn.cursor()
     cur.execute("DELETE FROM vendas_alicates WHERE is_seed = true")
