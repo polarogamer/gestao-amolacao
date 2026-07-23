@@ -83,6 +83,7 @@ def init_db():
             sku TEXT UNIQUE NOT NULL,
             descricao TEXT NOT NULL,
             tipo TEXT,
+            marca TEXT,
             quantidade INTEGER DEFAULT 0,
             preco_venda NUMERIC(10,2),
             estoque_minimo INTEGER DEFAULT 5,
@@ -90,6 +91,7 @@ def init_db():
         )
     ''')
     cur.execute("ALTER TABLE estoque_alicates ADD COLUMN IF NOT EXISTS is_seed BOOLEAN DEFAULT FALSE")
+    cur.execute("ALTER TABLE estoque_alicates ADD COLUMN IF NOT EXISTS marca TEXT")
 
     cur.execute('''
         CREATE TABLE IF NOT EXISTS movimentacoes_caixa (
@@ -232,6 +234,17 @@ def garantir_colunas_seed():
     cur = conn.cursor()
     for tabela in _TABELAS_SEED:
         cur.execute(f"ALTER TABLE {tabela} ADD COLUMN IF NOT EXISTS is_seed BOOLEAN DEFAULT FALSE")
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+def garantir_coluna_marca():
+    """Cria a coluna marca em estoque_alicates se faltar (mesmo motivo do
+    garantir_colunas_seed: o Supabase não roda o init_db a cada deploy)."""
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("ALTER TABLE estoque_alicates ADD COLUMN IF NOT EXISTS marca TEXT")
     conn.commit()
     cur.close()
     conn.close()

@@ -1,7 +1,8 @@
 import psycopg2
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 
-from db import get_db, formatar_moeda, formatar_data_br, parse_valor, parse_inteiro, agora_br
+from db import (get_db, formatar_moeda, formatar_data_br, parse_valor, parse_inteiro,
+                agora_br, garantir_coluna_marca)
 from auth import login_required
 
 bp = Blueprint('estoque', __name__)
@@ -10,19 +11,27 @@ bp = Blueprint('estoque', __name__)
 @bp.route('/estoque')
 @login_required
 def estoque():
+    garantir_coluna_marca()
+    hoje = agora_br().strftime('%Y-%m-%d')
     conn = get_db()
     cur = conn.cursor()
     cur.execute("SELECT * FROM estoque_alicates ORDER BY descricao")
     produtos = cur.fetchall()
+    # Encomendas antigas que ficaram aguardando pagamento (compatibilidade).
     cur.execute("SELECT * FROM vendas_alicates WHERE status = 'reservado' ORDER BY id DESC")
     reservas = cur.fetchall()
-    cur.execute("SELECT * FROM vendas_alicates WHERE status = 'pago' ORDER BY id DESC LIMIT 20")
-    vendas_recentes = cur.fetchall()
+    # Só as vendas de HOJE (pagas), sincronizadas com o caixa.
+    cur.execute(
+        "SELECT * FROM vendas_alicates WHERE status = 'pago' AND data_pagamento = %s ORDER BY id DESC",
+        (hoje,),
+    )
+    vendas_hoje = cur.fetchall()
+    total_hoje = sum(float(v['valor_total'] or 0) for v in vendas_hoje)
     cur.close()
     conn.close()
     return render_template('estoque.html', produtos=produtos, reservas=reservas,
-                           vendas_recentes=vendas_recentes, formatar_moeda=formatar_moeda,
-                           formatar_data=formatar_data_br)
+                           vendas_hoje=vendas_hoje, total_hoje=total_hoje,
+                           formatar_moeda=formatar_moeda, formatar_data=formatar_data_br)
 
 
 @bp.route('/estoque/adicionar', methods=['POST'])
@@ -47,10 +56,11 @@ def estoque_adicionar():
         flash(f'📦 Estoque reabastecido! +{quantidade_nova} unidades de {existente["descricao"]}.', 'success')
     else:
         cur.execute('''
-            INSERT INTO estoque_alicates (sku, descricao, tipo, quantidade, preco_venda)
-            VALUES (%s, %s, %s, %s, %s)
-        ''', (sku, descricao, request.form.get('tipo', ''), quantidade_nova,
-              parse_valor(request.form.get('preco_venda'))))
+            INSERT INTO estoque_alicates (sku, descricao, tipo, marca, quantidade, preco_venda, estoque_minimo)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        ''', (sku, descricao, request.form.get('tipo', ''), request.form.get('marca', ''),
+              quantidade_nova, parse_valor(request.form.get('preco_venda')),
+              parse_inteiro(request.form.get('estoque_minimo'), 5)))
         flash('Produto adicionado!', 'success')
 
     conn.commit()
@@ -103,6 +113,13 @@ def estoque_vender():
         conn.close()
         return redirect(url_for('estoque.estoque'))
 
+    # A venda só acontece se pagar na hora (Pix ou Espécie) - sem pagar depois.
+    if forma_pagamento not in ('Pix', 'Espécie'):
+        flash('Selecione a forma de pagamento (Pix ou Espécie). A venda só é registrada se pagar na hora.', 'error')
+        cur.close()
+        conn.close()
+        return redirect(url_for('estoque.estoque'))
+
     if quantidade < 1:
         flash('Quantidade inválida!', 'error')
         cur.close()
@@ -122,29 +139,19 @@ def estoque_vender():
 
     cur.execute("UPDATE estoque_alicates SET quantidade = quantidade - %s WHERE id = %s", (quantidade, produto_id))
 
-    if forma_pagamento:
-        status = 'pago'
-        data_pagamento = hoje
-    else:
-        status = 'reservado'
-        data_pagamento = None
-
     cur.execute('''
         INSERT INTO vendas_alicates (produto_id, produto_descricao, cliente_nome, telefone, quantidade,
                                       valor_unitario, valor_total, forma_pagamento, status, data_registro, data_pagamento)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'pago', %s, %s) RETURNING id
     ''', (produto_id, produto['descricao'], cliente_nome, telefone, quantidade,
-          valor_unitario, valor_total, forma_pagamento or None, status, hoje, data_pagamento))
+          valor_unitario, valor_total, forma_pagamento, hoje, hoje))
     venda_id = cur.fetchone()['id']
 
-    if status == 'pago':
-        cur.execute('''
-            INSERT INTO movimentacoes_caixa (data, tipo, descricao, categoria, valor, forma_pagamento, referencia_os_id, hora)
-            VALUES (%s, 'entrada', %s, 'Venda', %s, %s, %s, %s)
-        ''', (hoje, f'Venda {produto["descricao"]} - {cliente_nome}', valor_total, forma_pagamento, venda_id, agora.strftime('%H:%M')))
-        flash(f'✅ Venda registrada! {formatar_moeda(valor_total)} ({forma_pagamento})', 'success')
-    else:
-        flash(f'📌 Encomenda separada no estoque para {cliente_nome}. Confirme o pagamento quando ela vier buscar.', 'success')
+    cur.execute('''
+        INSERT INTO movimentacoes_caixa (data, tipo, descricao, categoria, valor, forma_pagamento, referencia_os_id, hora)
+        VALUES (%s, 'entrada', %s, 'Venda', %s, %s, %s, %s)
+    ''', (hoje, f'Venda {produto["descricao"]} - {cliente_nome}', valor_total, forma_pagamento, venda_id, agora.strftime('%H:%M')))
+    flash(f'✅ Venda registrada! {formatar_moeda(valor_total)} ({forma_pagamento})', 'success')
 
     conn.commit()
     cur.close()
